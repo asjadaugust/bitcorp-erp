@@ -26,6 +26,7 @@ import {
             </div>
           </div>
           <div class="header-actions" *ngIf="showActions">
+            <ng-content select="[header-actions]"></ng-content>
             <aero-button variant="secondary" iconLeft="fa-times" (clicked)="handleCancel()"
               >Cancelar</aero-button
             >

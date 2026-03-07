@@ -64,6 +64,11 @@ class ParteDiarioDetalleDto(ParteDiarioListaDto):
     firma_residente: str | None = None
     firma_planeamiento_control: str | None = None
     solicitud_aprobacion_id: int | None = None
+    gps_latitude: float | None = None
+    gps_longitude: float | None = None
+    gps_accuracy: float | None = None
+    weather_conditions: str | None = None
+    combustible_cargado: float | None = None
     # Children
     actividades: list["ActividadProduccionDto"] = []
     produccion: list["ProduccionDto"] = []
@@ -225,6 +230,12 @@ class ParteDiarioCrear(BaseModel):
     firma_operador: str | None = None
     firma_supervisor: str | None = None
     horas_precalentamiento: float | None = None
+    observaciones_correcciones: str | None = None
+    gps_latitude: float | None = None
+    gps_longitude: float | None = None
+    gps_accuracy: float | None = None
+    weather_conditions: str | None = None
+    combustible_cargado: float | None = None
     # Children
     actividades: list[ActividadItem] = []
     produccion: list[ProduccionItem] = []
@@ -265,6 +276,11 @@ class ParteDiarioActualizar(BaseModel):
     firma_supervisor: str | None = None
     horas_precalentamiento: float | None = None
     observaciones_correcciones: str | None = None
+    gps_latitude: float | None = None
+    gps_longitude: float | None = None
+    gps_accuracy: float | None = None
+    weather_conditions: str | None = None
+    combustible_cargado: float | None = None
     # Children (replace all on update)
     actividades: list[ActividadItem] | None = None
     produccion: list[ProduccionItem] | None = None

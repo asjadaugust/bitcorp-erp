@@ -25,10 +25,14 @@ import {
 } from '../../shared/components/filter-bar/filter-bar.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
+import {
+  PARTE_DIARIO_ESTADOS,
+  ESTADO_FILTER_OPTIONS,
+} from '../../core/constants/parte-diario.constants';
 
 @Component({
   selector: 'app-daily-report-list',
@@ -44,6 +48,7 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
     ActionsContainerComponent,
     AeroDataGridComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-page-layout
@@ -96,10 +101,10 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
 
       <!-- Status Badge Template -->
       <ng-template #statusTemplate let-row>
-        <span class="status-badge status-{{ row.estado?.toLowerCase() }}">
+        <aero-badge [variant]="estadoConfig[row.estado]?.badgeClass ?? 'neutral'">
           <i class="fa-solid" [ngClass]="getStatusIcon(row.estado)"></i>
-          {{ getStatusLabel(row.estado) }}
-        </span>
+          {{ estadoConfig[row.estado]?.label ?? row.estado }}
+        </aero-badge>
       </ng-template>
 
       <!-- Actions Template -->
@@ -170,50 +175,6 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
   `,
   styles: [
     `
-      .status-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.375rem;
-        padding: 0.2rem 0.625rem;
-        border-radius: 20px;
-        font-size: 0.7rem;
-        font-weight: 600;
-        text-transform: uppercase;
-        letter-spacing: 0.025em;
-        white-space: nowrap;
-      }
-
-      .status-borrador {
-        background: var(--grey-100);
-        color: var(--grey-500);
-      }
-
-      .status-pendiente {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-
-      .status-aprobado,
-      .status-aprobado_finanzas {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-blue-500);
-      }
-
-      .status-rechazado {
-        background: var(--grey-100);
-        color: var(--accent-500);
-      }
-
-      .status-aprobado_supervisor {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-blue-500);
-      }
-
-      .status-revisado_costos {
-        background: var(--primary-100);
-        color: var(--primary-500);
-      }
-
       .action-buttons {
         display: flex;
         gap: var(--s-4);
@@ -298,12 +259,7 @@ export class DailyReportListComponent implements OnInit {
       key: 'status',
       label: 'Estado',
       type: 'select',
-      options: [
-        { label: 'Borrador', value: 'BORRADOR' },
-        { label: 'Pendiente', value: 'PENDIENTE' },
-        { label: 'Aprobado', value: 'APROBADO' },
-        { label: 'Rechazado', value: 'RECHAZADO' },
-      ],
+      options: ESTADO_FILTER_OPTIONS,
     },
     {
       key: 'date',
@@ -311,6 +267,8 @@ export class DailyReportListComponent implements OnInit {
       type: 'date',
     },
   ];
+
+  estadoConfig = PARTE_DIARIO_ESTADOS;
 
   columns: DataGridColumn[] = [
     { key: 'codigo_equipo', label: 'Equipo', type: 'text', sortable: true, filterable: true },
@@ -339,12 +297,7 @@ export class DailyReportListComponent implements OnInit {
       sortable: true,
       filterable: true,
       filterType: 'select',
-      filterOptions: [
-        { label: 'Borrador', value: 'BORRADOR' },
-        { label: 'Pendiente', value: 'PENDIENTE' },
-        { label: 'Aprobado', value: 'APROBADO' },
-        { label: 'Rechazado', value: 'RECHAZADO' },
-      ],
+      filterOptions: ESTADO_FILTER_OPTIONS,
     },
 
     // --- Legacy columns (hidden by default, visible via column chooser) ---
@@ -444,16 +397,7 @@ export class DailyReportListComponent implements OnInit {
   }
 
   getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      BORRADOR: 'Borrador',
-      PENDIENTE: 'Pendiente',
-      APROBADO: 'Aprobado',
-      RECHAZADO: 'Rechazado',
-      APROBADO_SUPERVISOR: 'Aprob. Supervisor',
-      REVISADO_COSTOS: 'Rev. Costos',
-      APROBADO_FINANZAS: 'Aprob. Finanzas',
-    };
-    return labels[status] || status;
+    return PARTE_DIARIO_ESTADOS[status]?.label ?? status;
   }
 
   onFilterChange(filters: Record<string, unknown>) {

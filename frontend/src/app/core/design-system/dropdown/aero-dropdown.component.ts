@@ -137,22 +137,20 @@ export type DropdownState = 'default' | 'error';
         color: var(--accent-500);
       }
 
-      .aero-dropdown--error .aero-dropdown__label {
-        color: var(--accent-500);
-      }
 
       /* Field */
       .aero-dropdown__field {
         display: flex;
         align-items: center;
-        border: 1px solid var(--grey-600);
+        border: 1px solid var(--grey-700);
         border-radius: var(--radius-sm);
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
         padding: 0 var(--s-12);
         gap: var(--s-8);
         cursor: pointer;
         transition:
           border-color 0.15s ease,
+          border-width 0.15s ease,
           box-shadow 0.15s ease;
         outline: none;
       }
@@ -165,21 +163,29 @@ export type DropdownState = 'default' | 'error';
       }
 
       .aero-dropdown__field:hover {
-        border-color: var(--primary-900);
+        border-color: var(--grey-700);
+        border-width: 2px;
+        padding: 0 11px;
       }
 
       .aero-dropdown__field:focus {
         border-color: var(--primary-500);
+        border-width: 2px;
+        padding: 0 11px;
         box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
       }
 
       .aero-dropdown__field--open {
         border-color: var(--primary-500);
+        border-width: 2px;
+        padding: 0 11px;
         box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
       }
 
       .aero-dropdown__field--error {
-        border-color: var(--accent-500);
+        border-color: var(--semantic-red-600);
+        border-width: 2px;
+        padding: 0 11px;
       }
 
       .aero-dropdown--disabled .aero-dropdown__field {
@@ -221,13 +227,16 @@ export type DropdownState = 'default' | 'error';
       }
 
       .aero-dropdown__feedback {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
         display: flex;
         align-items: center;
         gap: var(--s-4);
         font-family: var(--font-text);
         font-size: var(--type-bodySmall-size);
         line-height: var(--type-bodySmall-line-height);
-        color: var(--accent-500);
+        color: var(--semantic-red-600);
       }
 
       /* Panel */
@@ -235,10 +244,11 @@ export type DropdownState = 'default' | 'error';
         position: absolute;
         top: 100%;
         left: 0;
-        right: 0;
+        min-width: 100%;
+        width: min-content;
         z-index: 1000;
         margin-top: var(--s-4);
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
         border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
         box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);

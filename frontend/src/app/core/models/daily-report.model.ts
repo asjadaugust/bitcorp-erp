@@ -35,6 +35,9 @@ export interface DailyReport {
   lugar_llegada?: string;
   responsable_frente?: string;
   observaciones?: string;
+  observaciones_correcciones?: string;
+  combustible_inicial?: number;
+  combustible_cargado?: number;
   photos?: string[];
   estado:
     | 'BORRADOR'
@@ -133,11 +136,15 @@ export interface CreateDailyReportDto {
   horometro_final: number;
   odometro_inicial?: number;
   odometro_final?: number;
+  combustible_inicial?: number;
+  combustible_cargado?: number;
   diesel_gln?: number;
   gasolina_gln?: number;
   hora_abastecimiento?: string;
   num_vale_combustible?: string;
   horometro_kilometraje?: number;
+  horas_precalentamiento?: number;
+  observaciones_correcciones?: string;
   lugar_salida?: string;
   lugar_llegada?: string;
   responsable_frente?: string;

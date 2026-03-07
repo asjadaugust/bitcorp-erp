@@ -86,19 +86,23 @@
   /* Legacy Blue Dark */
 
   /* Semantic - Green */
-  /* Legacy Green Light */
-  /* Legacy Green Dark */
+  --semantic-green-100: #e8fbe4;
+  --semantic-green-300: #9fd994;
+  --semantic-green-500: #2e7d32;
+  --semantic-green-900: #193403;
 
   /* Semantic - Red */
-  /* Legacy Red Light */
+  --semantic-red-100: #ffe0e8;
+  --semantic-red-300: #ff809d;
   --semantic-red-500: #ef4444;
+  --semantic-red-600: #d10031;
   --semantic-red-700: #dc2626;
-  /* Legacy Red Main */
-  /* Legacy Red Dark */
+  --semantic-red-900: #430211;
 
   /* Semantic - Yellow */
-  /* Legacy Yellow Light */
-  /* Legacy Yellow Dark */
+  --semantic-yellow-100: #fff9e0;
+  --semantic-yellow-300: #ffd97a;
+  --semantic-yellow-900: #322800;
 
   /* Neutral */
   --neutral-0: #ffffff;

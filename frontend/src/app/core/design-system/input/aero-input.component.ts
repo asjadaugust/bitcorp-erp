@@ -189,6 +189,7 @@ export type InputState = 'default' | 'error' | 'service';
         gap: var(--s-4);
         flex: 1;
         min-width: 0;
+        position: relative;
       }
 
       /* Label */
@@ -221,12 +222,14 @@ export type InputState = 'default' | 'error' | 'service';
       .aero-form-field__field {
         display: flex;
         align-items: center;
-        border: 1px solid var(--grey-600);
+        border: 1px solid var(--grey-700);
         border-radius: var(--radius-sm);
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
+        padding: 0;
         gap: var(--s-8);
         transition:
           border-color 0.15s ease,
+          border-width 0.15s ease,
           box-shadow 0.15s ease;
         width: 100%;
       }
@@ -241,11 +244,15 @@ export type InputState = 'default' | 'error' | 'service';
 
       /* Focus / Hover */
       .aero-form-field__field:hover:not(.aero-form-field__field--display) {
-        border-color: var(--primary-900);
+        border-color: var(--grey-700);
+        border-width: 2px;
+        padding: 0;
       }
 
       .aero-form-field__field--focused {
         border-color: var(--primary-500);
+        border-width: 2px;
+        padding: 0;
         box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
       }
 
@@ -258,15 +265,13 @@ export type InputState = 'default' | 'error' | 'service';
 
       /* Error state */
       .aero-form-field--error .aero-form-field__field {
-        border-color: var(--accent-500);
+        border-color: var(--semantic-red-600);
+        border-width: 2px;
+        padding: 0;
       }
 
       .aero-form-field--error .aero-form-field__field--focused {
         box-shadow: 0 0 0 3px rgba(209, 0, 49, 0.1);
-      }
-
-      .aero-form-field--error .aero-form-field__label {
-        color: var(--accent-500);
       }
 
       /* Service state */
@@ -291,9 +296,8 @@ export type InputState = 'default' | 'error' | 'service';
         min-width: 0;
         border: none;
         outline: none;
-        background: var(--neutral-0);
-        border: 1px solid var(--grey-300);
-        padding: 10px 12px;
+        background: transparent;
+        padding: 0 var(--s-12);
         font-family: var(--font-text);
         font-size: var(--type-body-size);
         line-height: var(--type-body-line-height);
@@ -374,6 +378,9 @@ export type InputState = 'default' | 'error' | 'service';
 
       /* Feedback */
       .aero-form-field__feedback {
+        position: absolute;
+        top: calc(100% + 4px);
+        left: 0;
         display: flex;
         align-items: center;
         gap: var(--s-4);
@@ -383,7 +390,7 @@ export type InputState = 'default' | 'error' | 'service';
       }
 
       .aero-form-field__feedback--error {
-        color: var(--accent-500);
+        color: var(--semantic-red-600);
       }
 
       .aero-form-field__feedback--service {
@@ -425,8 +432,8 @@ export class AeroInputComponent implements ControlValueAccessor {
   focused = false;
   showPassword = false;
 
-  onChange: (value: unknown) => void = () => {};
-  onTouched: () => void = () => {};
+  onChange: (value: unknown) => void = () => { };
+  onTouched: () => void = () => { };
 
   onInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;

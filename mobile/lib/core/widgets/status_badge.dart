@@ -16,37 +16,84 @@ class StatusBadge extends StatelessWidget {
     this.icon,
   });
 
-  /// Factory for common report/approval statuses
+  /// Factory for common report/approval statuses.
+  ///
+  /// Supports both legacy mobile-only keys (APPROVED, REJECTED, DRAFT, etc.)
+  /// and canonical backend keys (BORRADOR, PENDIENTE, APROBADO, etc.) for
+  /// cross-surface consistency with the web Admin and Operator views.
   factory StatusBadge.fromStatus(String status) {
     switch (status) {
+      // ── Canonical Parte Diario statuses (backend keys) ──────────
+      case 'BORRADOR':
+      case 'DRAFT':
+        return const StatusBadge(
+          label: 'Borrador',
+          backgroundColor: AeroTheme.grey200,
+          textColor: AeroTheme.grey500,
+          icon: Icons.edit_outlined,
+        );
+      case 'PENDIENTE':
+      case 'PENDING':
+        return StatusBadge(
+          label: 'Pendiente',
+          backgroundColor: AeroTheme.primary500.withValues(alpha: 0.1),
+          textColor: AeroTheme.primary500,
+          icon: Icons.schedule,
+        );
+      case 'APROBADO':
       case 'APPROVED':
+      case 'PASS':
         return const StatusBadge(
           label: 'Aprobado',
           backgroundColor: AeroTheme.semanticBlue100,
-          textColor: AeroTheme.semanticBlue500,
+          textColor: AeroTheme.semanticGreen500,
           icon: Icons.check_circle_outline,
         );
+      case 'RECHAZADO':
       case 'REJECTED':
+      case 'FAIL':
         return StatusBadge(
           label: 'Rechazado',
           backgroundColor: AeroTheme.accent500.withValues(alpha: 0.1),
           textColor: AeroTheme.accent500,
           icon: Icons.cancel_outlined,
         );
-      case 'PENDING':
+      case 'APROBADO_SUPERVISOR':
         return StatusBadge(
-          label: 'Pendiente',
-          backgroundColor: AeroTheme.semanticBlue500.withValues(alpha: 0.1),
-          textColor: AeroTheme.semanticBlue500,
-          icon: Icons.schedule,
+          label: 'Aprob. Supervisor',
+          backgroundColor: AeroTheme.primary500.withValues(alpha: 0.1),
+          textColor: AeroTheme.primary500,
+          icon: Icons.supervisor_account,
         );
-      case 'DRAFT':
+      case 'REVISADO_COSTOS':
+        return StatusBadge(
+          label: 'Rev. Costos',
+          backgroundColor: AeroTheme.primary500.withValues(alpha: 0.1),
+          textColor: AeroTheme.primary500,
+          icon: Icons.calculate_outlined,
+        );
+      case 'PENDIENTE_FINANZAS':
+        return StatusBadge(
+          label: 'Pend. Finanzas',
+          backgroundColor: AeroTheme.primary500.withValues(alpha: 0.1),
+          textColor: AeroTheme.primary500,
+          icon: Icons.account_balance_outlined,
+        );
+      case 'APROBADO_FINANZAS':
         return const StatusBadge(
-          label: 'Borrador',
-          backgroundColor: AeroTheme.grey200,
-          textColor: AeroTheme.primary900,
-          icon: Icons.edit_outlined,
+          label: 'Aprob. Finanzas',
+          backgroundColor: AeroTheme.semanticBlue100,
+          textColor: AeroTheme.semanticGreen500,
+          icon: Icons.paid_outlined,
         );
+      case 'ENVIADO':
+        return StatusBadge(
+          label: 'Enviado',
+          backgroundColor: AeroTheme.primary500.withValues(alpha: 0.1),
+          textColor: AeroTheme.primary500,
+          icon: Icons.send_outlined,
+        );
+      // ── Mobile-only sync statuses ───────────────────────────────
       case 'PENDING_SYNC':
         return const StatusBadge(
           label: 'Pendiente Sync',
@@ -60,20 +107,6 @@ class StatusBadge extends StatelessWidget {
           backgroundColor: AeroTheme.semanticBlue100,
           textColor: AeroTheme.semanticBlue500,
           icon: Icons.cloud_done_outlined,
-        );
-      case 'PASS':
-        return const StatusBadge(
-          label: 'Aprobado',
-          backgroundColor: AeroTheme.semanticBlue100,
-          textColor: AeroTheme.semanticBlue500,
-          icon: Icons.check_circle_outline,
-        );
-      case 'FAIL':
-        return StatusBadge(
-          label: 'Con Fallas',
-          backgroundColor: AeroTheme.accent500.withValues(alpha: 0.1),
-          textColor: AeroTheme.accent500,
-          icon: Icons.warning_amber_outlined,
         );
       default:
         return StatusBadge(

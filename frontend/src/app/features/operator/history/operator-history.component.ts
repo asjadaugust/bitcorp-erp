@@ -13,6 +13,7 @@ import { PageLayoutComponent } from '../../../shared/components/page-layout/page
 import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ConfirmService } from '../../../core/services/confirm.service';
+import { PARTE_DIARIO_ESTADOS } from '../../../core/constants/parte-diario.constants';
 
 interface HistoryReport {
   id: number;
@@ -478,23 +479,11 @@ export class OperatorHistoryComponent implements OnInit {
   }
 
   getStatusLabel(status: string): string {
-    const labels: Record<string, string> = {
-      BORRADOR: 'Borrador',
-      ENVIADO: 'Enviado',
-      APROBADO: 'Aprobado',
-      RECHAZADO: 'Rechazado',
-    };
-    return labels[status] || status;
+    return PARTE_DIARIO_ESTADOS[status]?.label ?? status;
   }
 
-  getBadgeVariant(status: string): 'success' | 'warning' | 'error' | 'info' | 'neutral' {
-    const variants: Record<string, 'success' | 'warning' | 'error' | 'info' | 'neutral'> = {
-      BORRADOR: 'warning',
-      ENVIADO: 'info',
-      APROBADO: 'success',
-      RECHAZADO: 'error',
-    };
-    return variants[status] || 'neutral';
+  getBadgeVariant(status: string): string {
+    return PARTE_DIARIO_ESTADOS[status]?.badgeClass ?? 'neutral';
   }
 
   viewReport(report: HistoryReport) {

@@ -14,22 +14,26 @@ import {
 import { EquipmentService } from '../../../core/services/equipment.service';
 import { ProjectService } from '../../../core/services/project.service';
 import { AuthService } from '../../../core/services/auth.service';
+import { EdtService } from '../../../core/services/edt.service';
 import { SyncManager } from '../../../core/services/sync-manager.service';
 import { ServiceWorkerService } from '../../../core/services/service-worker.service';
 import { Equipment } from '../../../core/models/equipment.model';
 import { Project } from '../../../core/models/project.model';
 import { SignaturePadComponent } from '../../../shared/components/signature-pad.component';
-import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../../shared/components/dropdown/dropdown.component';
+import { DropdownOption } from '../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
 import {
   AeroButtonComponent,
   AeroInputComponent,
   AeroBadgeComponent,
+  AeroDropdownComponent,
+  DropdownOption as AeroDropdownOption,
 } from '../../../core/design-system';
+import {
+  TURNO_OPTIONS,
+  WEATHER_OPTIONS,
+} from '../../../core/constants/parte-diario.constants';
 import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 @Component({
@@ -39,12 +43,12 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
     CommonModule,
     ReactiveFormsModule,
     SignaturePadComponent,
-    DropdownComponent,
     FormContainerComponent,
     FormSectionComponent,
     AeroButtonComponent,
     AeroInputComponent,
     AeroBadgeComponent,
+    AeroDropdownComponent,
   ],
   template: `
     <app-form-container
@@ -79,156 +83,142 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
 
       <form [formGroup]="reportForm">
         <!-- General Info Section -->
-        <app-form-section title="Información General" icon="fa-circle-info" [columns]="2">
-          <aero-input
-            formControlName="date"
-            label="Fecha"
-            type="date"
-            [required]="!isViewMode"
-            [error]="getFieldError('date')"
-          ></aero-input>
+        <app-form-section title="Informacion General" icon="fa-circle-info" [columns]="2">
           <div class="form-group">
-            <label class="form-label"
-              >Proyecto <span class="required" *ngIf="!isViewMode">*</span></label
-            >
-            <app-dropdown
-              formControlName="projectId"
-              [options]="projectOptions"
-              [placeholder]="'Seleccionar proyecto'"
-              [disabled]="isViewMode"
-            ></app-dropdown>
+            <label class="form-label required">Fecha</label>
+            <input type="date" formControlName="fecha" class="form-control" [readonly]="isViewMode" />
+            <div class="error-msg" *ngIf="getFieldError('fecha')">{{ getFieldError('fecha') }}</div>
           </div>
+          <aero-dropdown
+            formControlName="proyecto_id"
+            label="Proyecto"
+            [required]="!isViewMode"
+            [options]="projectOptions"
+            placeholder="Seleccionar proyecto"
+            [disabled]="isViewMode"
+          ></aero-dropdown>
+          <aero-dropdown
+            formControlName="turno"
+            label="Turno"
+            [options]="turnoOptions"
+            placeholder="Seleccione turno"
+            [disabled]="isViewMode"
+          ></aero-dropdown>
         </app-form-section>
 
         <!-- Equipment Section -->
         <app-form-section title="Equipo Utilizado" icon="fa-truck" [columns]="2">
           <div class="form-group full-width">
-            <label class="form-label"
-              >Seleccionar Equipo <span class="required" *ngIf="!isViewMode">*</span></label
-            >
-            <app-dropdown
-              formControlName="equipmentId"
+            <aero-dropdown
+              formControlName="equipo_id"
+              label="Equipo"
+              [required]="!isViewMode"
               [options]="equipmentOptions"
-              [placeholder]="'Seleccionar equipo'"
-              (ngModelChange)="onEquipmentSelect()"
+              placeholder="Seleccionar equipo"
               [disabled]="isViewMode"
               [searchable]="true"
-            ></app-dropdown>
+            ></aero-dropdown>
           </div>
-          <div class="form-group">
-            <label class="form-label"
-              >Horómetro Inicial <span class="required" *ngIf="!isViewMode">*</span></label
-            >
-            <input
-              type="number"
-              formControlName="horometerStart"
-              class="form-control"
-              placeholder="0"
-              step="0.1"
-              [readonly]="isViewMode"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label"
-              >Horómetro Final <span class="required" *ngIf="!isViewMode">*</span></label
-            >
-            <input
-              type="number"
-              formControlName="horometerEnd"
-              class="form-control"
-              placeholder="0"
-              step="0.1"
-              [readonly]="isViewMode"
-            />
-          </div>
+          <aero-input
+            formControlName="horometro_inicial"
+            label="Horometro Inicial"
+            [required]="!isViewMode"
+            type="number"
+            placeholder="0"
+            [disabled]="isViewMode"
+            [state]="getFieldError('horometro_inicial') ? 'error' : 'default'"
+            [error]="getFieldError('horometro_inicial') || ''"
+          ></aero-input>
+          <aero-input
+            formControlName="horometro_final"
+            label="Horometro Final"
+            [required]="!isViewMode"
+            type="number"
+            placeholder="0"
+            [disabled]="isViewMode"
+            [state]="getFieldError('horometro_final') ? 'error' : 'default'"
+            [error]="getFieldError('horometro_final') || ''"
+          ></aero-input>
           <div class="form-group">
             <label class="form-label">Horas Trabajadas</label>
             <input type="text" [value]="calculateHours()" class="form-control" readonly />
           </div>
+          <aero-input
+            formControlName="odometro_inicial"
+            label="Odometro Inicial (km)"
+            type="number"
+            placeholder="0"
+            [disabled]="isViewMode"
+            hint="Solo vehiculos"
+          ></aero-input>
+          <aero-input
+            formControlName="odometro_final"
+            label="Odometro Final (km)"
+            type="number"
+            placeholder="0"
+            [disabled]="isViewMode"
+          ></aero-input>
         </app-form-section>
 
         <!-- Time Section -->
         <app-form-section title="Horario de Trabajo" icon="fa-clock" [columns]="2">
-          <aero-input
-            formControlName="startTime"
-            label="Hora Inicio"
-            type="time"
-            [required]="!isViewMode"
-            [error]="getFieldError('startTime')"
-          ></aero-input>
-          <aero-input
-            formControlName="endTime"
-            label="Hora Fin"
-            type="time"
-            [required]="!isViewMode"
-            [error]="getFieldError('endTime')"
-          ></aero-input>
+          <div class="form-group">
+            <label class="form-label required">Hora de Inicio</label>
+            <input type="time" formControlName="hora_inicio" class="form-control" [readonly]="isViewMode" />
+            <div class="error-msg" *ngIf="getFieldError('hora_inicio')">{{ getFieldError('hora_inicio') }}</div>
+          </div>
+          <div class="form-group">
+            <label class="form-label required">Hora de Fin</label>
+            <input type="time" formControlName="hora_fin" class="form-control" [readonly]="isViewMode" />
+            <div class="error-msg" *ngIf="getFieldError('hora_fin')">{{ getFieldError('hora_fin') }}</div>
+          </div>
+          <div class="form-group full-width">
+            <label class="form-label required">Lugar de Salida</label>
+            <div class="gps-field">
+              <input type="text" formControlName="lugar_salida" class="form-control" placeholder="Ubicacion / frente de trabajo" [readonly]="isViewMode" />
+              <aero-button *ngIf="!isViewMode" variant="secondary" iconLeft="fa-location-crosshairs" [loading]="capturingGPS" (clicked)="captureGPS()">GPS</aero-button>
+            </div>
+          </div>
         </app-form-section>
 
         <!-- Fuel Section -->
-        <app-form-section title="Consumo de Combustible" icon="fa-gas-pump" [columns]="2">
-          <div class="form-group">
-            <label class="form-label">Tanque Inicial (%)</label>
-            <input
-              type="number"
-              formControlName="fuelStart"
-              class="form-control"
-              placeholder="0"
-              min="0"
-              max="100"
-              [readonly]="isViewMode"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Tanque Final (%)</label>
-            <input
-              type="number"
-              formControlName="fuelEnd"
-              class="form-control"
-              placeholder="0"
-              min="0"
-              max="100"
-              [readonly]="isViewMode"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Combustible Cargado (L)</label>
-            <input
-              type="number"
-              formControlName="fuelAdded"
-              class="form-control"
-              placeholder="0"
-              step="0.1"
-              [readonly]="isViewMode"
-            />
-          </div>
-          <div class="form-group">
-            <label class="form-label">Consumo Total (L)</label>
-            <input type="text" [value]="calculateFuelConsumption()" class="form-control" readonly />
-          </div>
+        <app-form-section title="Combustible" icon="fa-gas-pump" [columns]="2">
+          <aero-input
+            formControlName="combustible_inicial"
+            label="Combustible Inicial (L)"
+            type="number"
+            placeholder="0.00"
+            [disabled]="isViewMode"
+          ></aero-input>
+          <aero-input
+            formControlName="combustible_cargado"
+            label="Combustible Cargado (L)"
+            type="number"
+            placeholder="0.00"
+            [disabled]="isViewMode"
+          ></aero-input>
+          <aero-input
+            formControlName="num_vale_combustible"
+            label="N Vale Combustible"
+            type="text"
+            placeholder="Ej. V-2025-001234"
+            [disabled]="isViewMode"
+            hint="CORP-LA-F-004 - opcional"
+          ></aero-input>
         </app-form-section>
 
         <!-- Location Section -->
-        <app-form-section title="Ubicación" icon="fa-location-dot" [columns]="1">
+        <app-form-section title="Ubicacion" icon="fa-location-dot" [columns]="1">
           <div class="form-group">
-            <label class="form-label">Ubicación GPS</label>
+            <label class="form-label">Ubicacion GPS</label>
             <div class="gps-field">
               <input
                 type="text"
                 formControlName="gpsLocation"
                 class="form-control"
-                placeholder="Capturar ubicación GPS"
+                placeholder="Capturar ubicacion GPS"
                 readonly
               />
-              <aero-button
-                *ngIf="!isViewMode"
-                variant="primary"
-                iconLeft="fa-location-crosshairs"
-                [loading]="capturingGPS"
-                [disabled]="isViewMode"
-                (clicked)="captureGPS()"
-                >Capturar</aero-button
-              >
             </div>
 
             <!-- Location details -->
@@ -240,12 +230,12 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
                 >
               </div>
               <div class="detail-item">
-                <span class="detail-label">Precisión:</span>
+                <span class="detail-label">Precision:</span>
                 <span
                   class="detail-value"
                   [class.good-accuracy]="locationResult.coords.accuracy <= 50"
                 >
-                  ±{{ locationResult.coords.accuracy.toFixed(0) }}m ({{
+                  {{ locationResult.coords.accuracy.toFixed(0) }}m ({{
                     geoService.getAccuracyLevel(locationResult.coords.accuracy)
                   }})
                 </span>
@@ -262,27 +252,29 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
               <span>{{ locationError }}</span>
             </div>
           </div>
-
-          <aero-input
-            formControlName="manualLocation"
-            label="Ubicación Manual (Descripción)"
-            type="text"
-            placeholder="Ej: Km 45 carretera norte..."
-            [hint]="!isViewMode ? 'Describe la ubicación con tus propias palabras' : ''"
-          ></aero-input>
         </app-form-section>
 
         <!-- Work Description -->
-        <app-form-section title="Descripción del Trabajo" icon="fa-list-check" [columns]="1">
+        <app-form-section title="Descripcion del Trabajo" icon="fa-list-check" [columns]="1">
           <div class="form-group">
             <label class="form-label"
               >Actividades Realizadas <span class="required" *ngIf="!isViewMode">*</span></label
             >
             <textarea
-              formControlName="workDescription"
+              formControlName="observaciones"
               class="form-control"
               rows="4"
               placeholder="Describa las actividades realizadas durante el día..."
+              [readonly]="isViewMode"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label class="form-label">Observaciones</label>
+            <textarea
+              formControlName="observaciones_correcciones"
+              class="form-control"
+              rows="3"
+              placeholder="Observaciones adicionales..."
               [readonly]="isViewMode"
             ></textarea>
           </div>
@@ -350,7 +342,12 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
                         step="0.01"
                       />
                     </td>
-                    <td><input type="text" formControlName="edtCodigo" class="form-input-sm" /></td>
+                    <td>
+                      <aero-dropdown formControlName="edt_id"
+                        [options]="edtOptions" [searchable]="true"
+                        placeholder="EDT...">
+                      </aero-dropdown>
+                    </td>
                     <td>
                       <aero-button
                         variant="danger"
@@ -413,6 +410,31 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
               </label>
             </div>
           </div>
+        </app-form-section>
+
+        <!-- Cierre -->
+        <app-form-section title="Cierre" icon="fa-flag-checkered" [columns]="2">
+          <aero-input
+            formControlName="lugar_llegada"
+            label="Lugar de Llegada"
+            type="text"
+            placeholder="Ubicacion de llegada"
+            [disabled]="isViewMode"
+          ></aero-input>
+          <aero-dropdown
+            formControlName="weather_conditions"
+            label="Condiciones Climaticas"
+            [options]="weatherOptions"
+            placeholder="Seleccione..."
+            [disabled]="isViewMode"
+          ></aero-dropdown>
+          <aero-input
+            formControlName="responsable_frente"
+            label="Responsable de Frente"
+            type="text"
+            placeholder="Nombre del responsable"
+            [disabled]="isViewMode"
+          ></aero-input>
         </app-form-section>
 
         <!-- Signatures -->
@@ -1071,6 +1093,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   private router = inject(Router);
   private route = inject(ActivatedRoute);
   private dailyReportService = inject(DailyReportService);
+  private edtService = inject(EdtService);
   private snackBar = inject(MatSnackBar);
 
   reportForm: FormGroup;
@@ -1091,6 +1114,10 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   saving = false;
   lightboxOpen = false;
   lightboxIndex = 0;
+
+  turnoOptions: AeroDropdownOption[] = TURNO_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  weatherOptions: AeroDropdownOption[] = WEATHER_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  edtOptions: AeroDropdownOption[] = [];
 
   get projectOptions(): DropdownOption[] {
     return this.availableProjects.map((p) => ({
@@ -1176,30 +1203,29 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
 
   constructor() {
     this.reportForm = this.fb.group({
-      date: [new Date().toISOString().split('T')[0], Validators.required],
-      projectId: ['', Validators.required],
-      equipmentId: ['', Validators.required],
-      horometerStart: ['', Validators.required],
-      horometerEnd: ['', Validators.required],
-      startTime: ['', Validators.required],
-      endTime: ['', Validators.required],
-      fuelStart: [''],
-      fuelEnd: [''],
-      fuelAdded: [''],
+      fecha: [new Date().toISOString().split('T')[0], Validators.required],
+      proyecto_id: ['', Validators.required],
+      equipo_id: ['', Validators.required],
+      horometro_inicial: ['', Validators.required],
+      horometro_final: ['', Validators.required],
+      hora_inicio: ['', Validators.required],
+      hora_fin: ['', Validators.required],
+      combustible_inicial: [''],
+      combustible_cargado: [''],
+      num_vale_combustible: [''],
       gpsLocation: [''],
-      manualLocation: [''],
-      workDescription: ['', Validators.required],
+      lugar_salida: [''],
+      observaciones: ['', Validators.required],
+      observaciones_correcciones: [''],
 
-      // New extended fields
-      turno: ['day'],
-      responsableFrente: [''],
-      lugarSalida: [''],
-      lugarLlegada: [''],
-      petroleo: [''],
-      gasolina: [''],
-      horaAbastecimiento: [''],
-      valeCombus: [''],
-      observaciones: [''],
+      // Extended fields
+      turno: ['DIA'],
+      responsable_frente: [''],
+      lugar_llegada: [''],
+      weather_conditions: [''],
+      odometro_inicial: [''],
+      odometro_final: [''],
+      horas_precalentamiento: [''],
 
       // Production rows (FormArray)
       productionRows: this.fb.array([]),
@@ -1214,8 +1240,6 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
       firmaOperador: [''],
       firmaSupervisor: [''],
       firmaJefeEquipos: [''],
-      firmaResidente: [''],
-      firmaPlaneamiento: [''],
     });
 
     // Initialize activity checkboxes
@@ -1265,7 +1289,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         horaFin: [''],
         materialDescripcion: [''],
         metrado: [''],
-        edtCodigo: [''],
+        edt_id: [''],
       })
     );
   }
@@ -1284,6 +1308,17 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
 
     // Load equipment and projects
     this.loadEquipmentAndProjects();
+
+    // Load EDT dropdown options
+    this.edtService.getDropdownOptions().subscribe({
+      next: (items) => {
+        this.edtOptions = items.map((item) => ({
+          label: `${item.codigo} - ${item.nombre}`,
+          value: item.id,
+        }));
+      },
+      error: () => {},
+    });
 
     this.route.params.subscribe((params) => {
       const id = params['id'];
@@ -1349,18 +1384,26 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
     this.dailyReportService.getById(id).subscribe({
       next: (report) => {
         this.reportForm.patchValue({
-          date: report.fecha_parte,
-          projectId: report.proyecto_id,
-          equipmentId: report.equipo_id,
-          horometerStart: report.horometro_inicial,
-          horometerEnd: report.horometro_final,
-          startTime: report.hora_inicio,
-          endTime: report.hora_fin,
-          fuelStart: report.diesel_gln,
-          fuelEnd: report.gasolina_gln,
-          gpsLocation: report.lugar_salida,
-          manualLocation: report.lugar_llegada,
-          workDescription: report.observaciones,
+          fecha: report.fecha_parte,
+          proyecto_id: report.proyecto_id,
+          equipo_id: report.equipo_id,
+          horometro_inicial: report.horometro_inicial,
+          horometro_final: report.horometro_final,
+          hora_inicio: report.hora_inicio,
+          hora_fin: report.hora_fin,
+          combustible_inicial: report.combustible_inicial,
+          combustible_cargado: report.combustible_cargado,
+          num_vale_combustible: report.num_vale_combustible,
+          lugar_salida: report.lugar_salida,
+          lugar_llegada: report.lugar_llegada,
+          observaciones: report.observaciones,
+          observaciones_correcciones: report.observaciones_correcciones,
+          turno: report.turno,
+          responsable_frente: report.responsable_frente,
+          weather_conditions: report.weather_conditions,
+          odometro_inicial: report.odometro_inicial,
+          odometro_final: report.odometro_final,
+          horas_precalentamiento: report.horas_precalentamiento,
         });
 
         if (this.isViewMode) {
@@ -1407,7 +1450,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   }
 
   onEquipmentSelect() {
-    const equipmentId = this.reportForm.get('equipmentId')?.value;
+    const equipmentId = this.reportForm.get('equipo_id')?.value;
     if (!equipmentId) return;
 
     this.dailyReportService.getAll({ equipo_id: equipmentId, limit: 1 }).subscribe({
@@ -1415,8 +1458,8 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         if (reports.length > 0) {
           const last = reports[0];
           this.reportForm.patchValue({
-            horometerStart: last.horometro_final ?? '',
-            fuelStart: last.gasolina_gln ?? '',
+            horometro_inicial: last.horometro_final ?? '',
+            combustible_inicial: last.combustible_inicial ?? '',
           });
         }
       },
@@ -1427,22 +1470,13 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   }
 
   calculateHours(): string {
-    const start = this.reportForm.get('horometerStart')?.value;
-    const end = this.reportForm.get('horometerEnd')?.value;
+    const start = this.reportForm.get('horometro_inicial')?.value;
+    const end = this.reportForm.get('horometro_final')?.value;
 
     if (start && end && end > start) {
       return (end - start).toFixed(1) + ' h';
     }
     return '0.0 h';
-  }
-
-  calculateFuelConsumption(): string {
-    const start = this.reportForm.get('fuelStart')?.value || 0;
-    const end = this.reportForm.get('fuelEnd')?.value || 0;
-    const added = this.reportForm.get('fuelAdded')?.value || 0;
-
-    const consumption = (start + added - end).toFixed(1);
-    return consumption + ' L';
   }
 
   captureGPS() {
@@ -1701,30 +1735,36 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
       const formValue = this.reportForm.value;
 
       const reportData = {
-        fecha_parte: formValue.date,
-        equipo_id: formValue.equipmentId,
+        fecha_parte: formValue.fecha,
+        equipo_id: formValue.equipo_id,
         trabajador_id: this.authService.currentUser?.id_usuario ?? 0,
-        proyecto_id: formValue.projectId || null,
-        horometro_inicial: formValue.horometerStart,
-        horometro_final: formValue.horometerEnd,
-        hora_inicio: formValue.startTime,
-        hora_fin: formValue.endTime,
-        location: formValue.manualLocation || formValue.gpsLocation,
-        observaciones: formValue.workDescription,
-        diesel_gln: formValue.fuelAdded || 0,
+        proyecto_id: formValue.proyecto_id || null,
+        horometro_inicial: formValue.horometro_inicial,
+        horometro_final: formValue.horometro_final,
+        hora_inicio: formValue.hora_inicio,
+        hora_fin: formValue.hora_fin,
+        lugar_salida: formValue.lugar_salida,
+        lugar_llegada: formValue.lugar_llegada,
+        observaciones: formValue.observaciones,
+        observaciones_correcciones: formValue.observaciones_correcciones,
+        combustible_inicial: formValue.combustible_inicial || 0,
+        combustible_cargado: formValue.combustible_cargado || 0,
+        num_vale_combustible: formValue.num_vale_combustible,
+        turno: formValue.turno,
+        responsable_frente: formValue.responsable_frente,
+        weather_conditions: formValue.weather_conditions,
+        odometro_inicial: formValue.odometro_inicial,
+        odometro_final: formValue.odometro_final,
+        horas_precalentamiento: formValue.horas_precalentamiento,
         worked_hours: parseFloat(this.calculateHours()),
         status: 'PENDIENTE' as const,
 
-        // New fields
-        turno: formValue.turno,
-        responsable_frente: formValue.responsableFrente,
-        lugar_salida: formValue.lugarSalida,
-        lugar_llegada: formValue.lugarLlegada,
-        petroleo_gln: formValue.petroleo,
-        gasolina_gln: formValue.gasolina,
-        hora_abastecimiento: formValue.horaAbastecimiento,
-        num_vale_combustible: formValue.valeCombus,
-        observaciones_correcciones: formValue.observaciones,
+        // GPS coordinates (dynamically added)
+        gps_latitude: formValue.latitude,
+        gps_longitude: formValue.longitude,
+        gps_accuracy: formValue.locationAccuracy,
+
+        // Signatures
         firma_operador: formValue.firmaOperador,
         firma_supervisor: formValue.firmaSupervisor,
         firma_jefe_equipos: formValue.firmaJefeEquipos,
@@ -1739,7 +1779,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
         demorasMecanicas: this.getSelectedCheckboxes(formValue.mechanicalDelays),
       };
 
-      this.dailyReportService.create(reportData).subscribe({
+      this.dailyReportService.create(reportData as any).subscribe({
         next: (response) => {
           this.clearDraft();
           // Upload photos if any were captured

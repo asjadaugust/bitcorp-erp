@@ -1,42 +1,27 @@
-<div class="form-container">
-  <!-- Header -->
-  <div class="page-header">
-    <div class="header-content">
-      <div class="icon-wrapper">
-        <i class="fa-solid" [class.fa-plus]="!reportId" [class.fa-pen]="reportId"></i>
-      </div>
-      <div class="title-group">
-        <h1>{{ reportId ? 'Editar Parte Diario' : 'Nuevo Parte Diario' }}</h1>
-        <p class="subtitle">
-          {{
-          reportId
-          ? 'Actualizar información del reporte diario'
-          : 'Registrar un nuevo reporte de uso de equipo'
-          }}
-        </p>
-      </div>
-    </div>
-    <div class="header-actions">
-      <button class="btn btn-secondary" (click)="cancel()">Cancelar</button>
-      <button *ngIf="!!reportId" class="btn btn-secondary" (click)="descargarPdf()" [disabled]="downloadingPdf"
-        title="Descargar PDF" data-testid="btn-download-pdf">
-        <i class="fa-solid" [class.fa-file-pdf]="!downloadingPdf" [class.fa-spinner]="downloadingPdf"
-          [class.fa-spin]="downloadingPdf"></i>
-        {{ downloadingPdf ? 'Descargando...' : 'Descargar PDF' }}
-      </button>
-      <button class="btn btn-secondary" (click)="saveAsDraft()" [disabled]="saving || loading" *ngIf="!reportId">
-        <i class="fa-solid fa-save"></i> Guardar Borrador
-      </button>
-      <button class="btn btn-primary" (click)="submitReport()" [disabled]="reportForm.invalid || saving || loading">
-        <i class="fa-solid fa-paper-plane"></i> {{ saving ? 'Enviando...' : 'Enviar Reporte' }}
-      </button>
-    </div>
-  </div>
+<app-form-container
+  [title]="reportId ? 'Editar Parte Diario' : 'Nuevo Parte Diario'"
+  [subtitle]="reportId ? 'Actualizar informacion del reporte diario' : 'Registrar un nuevo reporte de uso de equipo'"
+  [icon]="reportId ? 'fa-pen' : 'fa-plus'"
+  [loading]="saving"
+  [disableSubmit]="reportForm.invalid || saving || loading"
+  submitLabel="Enviar Reporte"
+  (submitted)="submitReport()"
+  (cancelled)="cancel()"
+>
+  <!-- Header Actions -->
+  <aero-button *ngIf="reportId" header-actions variant="secondary" iconLeft="fa-file-pdf"
+    [disabled]="downloadingPdf" (clicked)="descargarPdf()">
+    {{ downloadingPdf ? 'Descargando...' : 'Descargar PDF' }}
+  </aero-button>
+  <aero-button *ngIf="!reportId" header-actions variant="secondary" iconLeft="fa-save"
+    [disabled]="saving || loading" (clicked)="saveAsDraft()">
+    Guardar Borrador
+  </aero-button>
 
   <!-- Offline Indicator -->
   <div class="offline-indicator" *ngIf="isOffline">
     <i class="fa-solid fa-cloud-slash"></i>
-    <span>Sin conexión - Los cambios se guardarán localmente</span>
+    <span>Sin conexion - Los cambios se guardaran localmente</span>
   </div>
 
   <!-- Loading -->
@@ -44,244 +29,292 @@
     <p>Cargando...</p>
   </div>
 
-  <!-- Form -->
-  <div class="card form-card" *ngIf="!loading">
-    <form [formGroup]="reportForm" class="form-grid">
+  <form [formGroup]="reportForm" class="form-grid" *ngIf="!loading">
 
-      <!-- Section 1: Basic Information -->
-      <div class="form-section full-width">
-        <h3>Información Básica</h3>
-        <div class="section-grid">
-          <div class="form-group">
-            <label for="fecha_parte">Fecha *</label>
-            <input id="fecha_parte" type="date" formControlName="fecha_parte" class="form-control" />
-            <div class="error-msg" *ngIf="hasError('fecha_parte')">La fecha es requerida</div>
-          </div>
+    <!-- Section A: Informacion General -->
+    <app-form-section title="Informacion General" icon="fa-clipboard-list">
+      <div class="form-group">
+        <label class="required">Fecha</label>
+        <input type="date" formControlName="fecha" class="form-control" />
+        <div class="error-msg" *ngIf="hasError('fecha')">La fecha es requerida</div>
+      </div>
 
-          <div class="form-group">
-            <label for="trabajador_id">Operador *</label>
-            <app-dropdown formControlName="trabajador_id" [options]="operatorOptions"
-              [placeholder]="'Seleccione un operador'" [searchable]="true"></app-dropdown>
-            <div class="error-msg" *ngIf="hasError('trabajador_id')">El operador es requerido</div>
-          </div>
+      <div class="form-group">
+        <aero-dropdown formControlName="trabajador_id" label="Operador" [required]="true"
+          [options]="operatorOptions" placeholder="Seleccione un operador"
+          [searchable]="true"
+          [state]="hasError('trabajador_id') ? 'error' : 'default'"
+          [error]="hasError('trabajador_id') ? 'El operador es requerido' : ''">
+        </aero-dropdown>
+      </div>
 
-          <div class="form-group full-width">
-            <label for="equipo_id">Equipo *</label>
-            <app-dropdown formControlName="equipo_id" [options]="equipmentOptions"
-              [placeholder]="'Seleccione un equipo'" [searchable]="true"></app-dropdown>
-            <div class="error-msg" *ngIf="hasError('equipo_id')">El equipo es requerido</div>
-          </div>
+      <div class="form-group full-width">
+        <aero-dropdown formControlName="equipo_id" label="Equipo" [required]="true"
+          [options]="equipmentOptions" placeholder="Seleccione un equipo"
+          [searchable]="true"
+          [state]="hasError('equipo_id') ? 'error' : 'default'"
+          [error]="hasError('equipo_id') ? 'El equipo es requerido' : ''">
+        </aero-dropdown>
+      </div>
+
+      <div class="form-group">
+        <aero-dropdown formControlName="turno" label="Turno"
+          [options]="turnoOptions" placeholder="Seleccione turno">
+        </aero-dropdown>
+      </div>
+
+      <div class="form-group">
+        <aero-dropdown formControlName="proyecto_id" label="Proyecto"
+          [options]="[]" placeholder="Seleccione proyecto"
+          [searchable]="true">
+        </aero-dropdown>
+      </div>
+    </app-form-section>
+
+    <!-- Section A2: Horario -->
+    <app-form-section title="Horario" icon="fa-clock">
+      <div class="form-group">
+        <label class="required">Hora de Inicio</label>
+        <input type="time" formControlName="hora_inicio" class="form-control" />
+        <div class="error-msg" *ngIf="hasError('hora_inicio')">Hora de inicio requerida</div>
+      </div>
+
+      <div class="form-group">
+        <label class="required">Hora de Fin</label>
+        <input type="time" formControlName="hora_fin" class="form-control" />
+        <div class="error-msg" *ngIf="hasError('hora_fin')">Hora de fin requerida</div>
+        <div class="error-msg" *ngIf="reportForm.get('hora_fin')?.hasError('invalidTimeRange')">
+          La hora de fin debe ser mayor a la hora de inicio
         </div>
       </div>
 
-      <!-- Section 2: Time and Hours -->
-      <div class="form-section full-width">
-        <h3>Horario y Horas</h3>
-        <div class="section-grid">
-          <div class="form-group">
-            <label for="hora_inicio">Hora de Inicio *</label>
-            <input id="hora_inicio" type="time" formControlName="hora_inicio" class="form-control" />
-            <div class="error-msg" *ngIf="hasError('hora_inicio')">Hora de inicio requerida</div>
-          </div>
+      <div class="form-group full-width">
+        <label class="required">Lugar de Salida</label>
+        <div class="location-row">
+          <input type="text" formControlName="lugar_salida" class="form-control" />
+          <aero-button variant="secondary" size="large" iconLeft="fa-location-crosshairs"
+            (clicked)="captureGPS()">GPS</aero-button>
+        </div>
+        <div class="error-msg" *ngIf="hasError('lugar_salida')">La ubicacion es requerida</div>
+        <div class="gps-coordinates" *ngIf="reportForm.get('gps_latitude')?.value">
+          <span class="chip">
+            <i class="fa-solid fa-location-dot"></i>
+            Lat: {{ reportForm.get('gps_latitude')?.value | number:'1.6-6' }}
+          </span>
+          <span class="chip">
+            <i class="fa-solid fa-location-dot"></i>
+            Lon: {{ reportForm.get('gps_longitude')?.value | number:'1.6-6' }}
+          </span>
+        </div>
+      </div>
+    </app-form-section>
 
-          <div class="form-group">
-            <label for="hora_fin">Hora de Fin *</label>
-            <input id="hora_fin" type="time" formControlName="hora_fin" class="form-control" />
-            <div class="error-msg" *ngIf="hasError('hora_fin')">Hora de fin requerida</div>
-            <div class="error-msg" *ngIf="reportForm.get('hora_fin')?.hasError('invalidTimeRange')">
-              La hora de fin debe ser mayor a la hora de inicio
-            </div>
-          </div>
+    <!-- Section B: Horometros y Odometros -->
+    <app-form-section title="Horometros y Odometros" icon="fa-gauge-high">
+      <div class="form-group">
+        <aero-input formControlName="horometro_inicial" label="Horometro Inicial"
+          [required]="true" type="number" placeholder="0.00"
+          [state]="hasError('horometro_inicial') ? 'error' : 'default'"
+          [error]="hasError('horometro_inicial') ? 'Requerido' : ''">
+        </aero-input>
+      </div>
 
-          <div class="form-group">
-            <label for="horometro_inicial">Horómetro Inicial *</label>
-            <input id="horometro_inicial" type="number" formControlName="horometro_inicial" class="form-control"
-              min="0" />
-            <div class="error-msg" *ngIf="hasError('horometro_inicial')">Requerido</div>
-          </div>
+      <div class="form-group">
+        <aero-input formControlName="horometro_final" label="Horometro Final"
+          [required]="true" type="number" placeholder="0.00"
+          [state]="hasError('horometro_final') ? 'error' : 'default'"
+          [error]="hasError('horometro_final') ? 'Requerido' : ''">
+        </aero-input>
+      </div>
 
-          <div class="form-group">
-            <label for="horometro_final">Horómetro Final *</label>
-            <input id="horometro_final" type="number" formControlName="horometro_final" class="form-control" min="0" />
-            <div class="error-msg" *ngIf="hasError('horometro_final')">Requerido</div>
-          </div>
+      <div class="full-width calculated-value" *ngIf="hoursWorked > 0">
+        <i class="fa-solid fa-clock"></i>
+        <strong>Horas Trabajadas:</strong> {{ hoursWorked | number:'1.2-2' }} hrs
+      </div>
 
-          <div class="full-width calculated-value" *ngIf="hoursWorked > 0">
-            <i class="fa-solid fa-clock"></i>
-            <strong>Horas Trabajadas:</strong> {{ hoursWorked | number:'1.2-2' }} hrs
+      <div class="form-group">
+        <aero-input formControlName="odometro_inicial" label="Odometro Inicial (km)"
+          type="number" placeholder="0" hint="Solo vehiculos">
+        </aero-input>
+      </div>
+
+      <div class="form-group">
+        <aero-input formControlName="odometro_final" label="Odometro Final (km)"
+          type="number" placeholder="0">
+        </aero-input>
+      </div>
+    </app-form-section>
+
+    <!-- Section B2: Precalentamiento -->
+    <app-form-section title="Precalentamiento" icon="fa-temperature-high">
+      <div class="form-group">
+        <label>
+          Horas de Precalentamiento
+          <span class="field-hint">(auto-calculado por tipo de equipo)</span>
+        </label>
+        <div class="precalentamiento-row">
+          <input type="number" formControlName="horas_precalentamiento"
+            class="form-control precalentamiento-input" min="0" max="24" step="0.25"
+            [attr.readonly]="!precalentamientoOverride ? true : null" />
+          <aero-button variant="tertiary" size="small"
+            [iconLeft]="precalentamientoOverride ? 'fa-lock-open' : 'fa-lock'"
+            (clicked)="togglePrecalentamientoOverride()">
+            {{ precalentamientoOverride ? 'Bloquear' : 'Editar' }}
+          </aero-button>
+        </div>
+        <div class="form-hint" *ngIf="precalentamientoTipoNombre">
+          <i class="fa-solid fa-circle-info"></i>
+          Valor configurado para <strong>{{ precalentamientoTipoNombre }}</strong> segun PRD Anexo B.
+        </div>
+      </div>
+    </app-form-section>
+
+    <!-- Section B3: Descripcion del Trabajo -->
+    <app-form-section title="Descripcion del Trabajo" icon="fa-pen-to-square">
+      <div class="form-group full-width">
+        <label class="required">Actividades Realizadas</label>
+        <textarea formControlName="observaciones" class="form-control" rows="4"
+          maxlength="500" placeholder="Describa las actividades realizadas..."></textarea>
+        <div class="char-counter">
+          {{ reportForm.get('observaciones')?.value?.length || 0 }} / 500
+        </div>
+        <div class="error-msg" *ngIf="hasError('observaciones')">Requerido</div>
+      </div>
+
+      <div class="form-group full-width">
+        <label>Observaciones</label>
+        <textarea formControlName="observaciones_correcciones" class="form-control" rows="3"
+          maxlength="1000" placeholder="Observaciones adicionales..."></textarea>
+      </div>
+    </app-form-section>
+
+    <!-- Section: Control de Produccion -->
+    <app-form-section title="Control de Produccion" icon="fa-table-cells" [columns]="1">
+      <div class="production-controls">
+        <aero-button variant="secondary" iconLeft="fa-plus" size="small"
+          [disabled]="productionRows.length >= 16"
+          (clicked)="addProductionRow()">
+          Agregar Fila
+        </aero-button>
+        <span class="help-text">{{ productionRows.length }}/16 filas</span>
+      </div>
+
+      <div class="table-responsive" *ngIf="productionRows.length > 0">
+        <table class="production-table">
+          <thead>
+            <tr>
+              <th>EDT</th>
+              <th>Ubicacion Ini.</th>
+              <th>Ubicacion Fin.</th>
+              <th>Hora Ini.</th>
+              <th>Hora Fin.</th>
+              <th>Material</th>
+              <th>Metrado</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody formArrayName="productionRows">
+            <tr *ngFor="let row of productionRows.controls; let i = index" [formGroupName]="i">
+              <td>
+                <aero-dropdown formControlName="edt_id"
+                  [options]="edtOptions" [searchable]="true"
+                  placeholder="EDT...">
+                </aero-dropdown>
+              </td>
+              <td><input type="text" formControlName="ubicacion_prog_ini" class="form-control form-input-sm" /></td>
+              <td><input type="text" formControlName="ubicacion_prog_fin" class="form-control form-input-sm" /></td>
+              <td><input type="time" formControlName="hora_ini" class="form-control form-input-sm" /></td>
+              <td><input type="time" formControlName="hora_fin" class="form-control form-input-sm" /></td>
+              <td><input type="text" formControlName="material_descripcion" class="form-control form-input-sm" /></td>
+              <td><input type="number" formControlName="metrado" class="form-control form-input-sm" step="0.01" /></td>
+              <td>
+                <aero-button variant="tertiary" iconLeft="fa-xmark" size="small"
+                  (clicked)="removeProductionRow(i)">
+                </aero-button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </app-form-section>
+
+    <!-- Section C: Combustible -->
+    <app-form-section title="Combustible" icon="fa-gas-pump">
+      <div class="form-group">
+        <aero-input formControlName="combustible_inicial" label="Combustible Inicial (L)"
+          type="number" placeholder="0.00">
+        </aero-input>
+      </div>
+
+      <div class="form-group">
+        <aero-input formControlName="combustible_cargado" label="Combustible Cargado (L)"
+          type="number" placeholder="0.00">
+        </aero-input>
+      </div>
+
+      <div class="form-group full-width">
+        <aero-input formControlName="num_vale_combustible" label="N Vale Combustible"
+          type="text" placeholder="Ej. V-2025-001234"
+          hint="CORP-LA-F-004 - opcional">
+        </aero-input>
+      </div>
+    </app-form-section>
+
+    <!-- Section C2: Cierre -->
+    <app-form-section title="Cierre" icon="fa-flag-checkered">
+      <div class="form-group">
+        <aero-input formControlName="lugar_llegada" label="Lugar de Llegada"
+          type="text" placeholder="Ubicacion de llegada">
+        </aero-input>
+      </div>
+
+      <div class="form-group">
+        <aero-dropdown formControlName="weather_conditions" label="Condiciones Climaticas"
+          [options]="weatherOptions" placeholder="Seleccione...">
+        </aero-dropdown>
+      </div>
+
+      <div class="form-group full-width">
+        <aero-input formControlName="responsable_frente" label="Responsable de Frente"
+          type="text" placeholder="Nombre del responsable">
+        </aero-input>
+      </div>
+    </app-form-section>
+
+    <!-- Section: Photos -->
+    <app-form-section title="Fotografias" icon="fa-camera" [columns]="1">
+      <div class="photo-upload-area">
+        <input type="file" #photoInput accept="image/*" multiple (change)="onPhotoSelect($event)"
+          style="display: none">
+
+        <aero-button variant="secondary" iconLeft="fa-camera" (clicked)="photoInput.click()"
+          [disabled]="uploadedPhotos.length >= maxPhotos">
+          Agregar Fotos ({{ uploadedPhotos.length }} / {{ maxPhotos }})
+        </aero-button>
+
+        <p class="upload-hint">
+          Maximo {{ maxPhotos }} fotos. Tamano maximo: 5MB por foto
+        </p>
+      </div>
+
+      <div class="photo-preview-grid" *ngIf="uploadedPhotos.length > 0">
+        <div class="photo-preview-item" *ngFor="let photo of uploadedPhotos; let i = index">
+          <img [src]="photo | async" alt="Preview">
+          <div class="photo-overlay">
+            <span class="photo-name">{{ photo.name }}</span>
+            <button class="delete-btn" (click)="removePhoto(i)" type="button">
+              <i class="fa-solid fa-trash"></i>
+            </button>
           </div>
         </div>
       </div>
+    </app-form-section>
 
-      <!-- Section 2.5: Precalentamiento -->
-      <div class="form-section full-width" data-testid="precalentamiento-section">
-        <h3>Precalentamiento</h3>
-        <div class="section-grid">
-          <div class="form-group">
-            <label for="horas_precalentamiento">
-              Horas de Precalentamiento
-              <span class="field-hint">(auto-calculado por tipo de equipo)</span>
-            </label>
-            <div class="precalentamiento-row">
-              <input id="horas_precalentamiento" type="number" formControlName="horas_precalentamiento"
-                class="form-control" min="0" max="24" step="0.25"
-                [attr.readonly]="!precalentamientoOverride ? true : null" data-testid="horas-precalentamiento-input" />
-              <button type="button" class="btn btn-sm btn-ghost override-toggle"
-                (click)="togglePrecalentamientoOverride()" data-testid="precalentamiento-override-btn"
-                [title]="precalentamientoOverride ? 'Bloquear valor automático' : 'Editar manualmente'">
-                <i class="fa-solid" [class.fa-lock]="!precalentamientoOverride"
-                  [class.fa-lock-open]="precalentamientoOverride"></i>
-                {{ precalentamientoOverride ? 'Bloquear' : 'Editar' }}
-              </button>
-            </div>
-            <div class="field-hint-block" *ngIf="precalentamientoTipoNombre">
-              <i class="fa-solid fa-circle-info"></i>
-              Valor configurado para <strong>{{ precalentamientoTipoNombre }}</strong> según PRD Anexo B.
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 3: Odometer (Optional) -->
-      <div class="form-section full-width">
-        <h3>Odómetro (Opcional - Solo Vehículos)</h3>
-        <div class="section-grid">
-          <div class="form-group">
-            <label for="odometro_inicial">Odómetro Inicial (km)</label>
-            <input id="odometer_inicial" type="number" formControlName="odometro_inicial" class="form-control"
-              min="0" />
-          </div>
-
-          <div class="form-group">
-            <label for="odometro_final">Odómetro Final (km)</label>
-            <input id="odometer_final" type="number" formControlName="odometro_final" class="form-control" min="0" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 4: Fuel -->
-      <div class="form-section full-width">
-        <h3>Combustible</h3>
-        <div class="section-grid">
-          <div class="form-group">
-            <label for="fuel_start">Combustible Inicial (L)</label>
-            <input id="fuel_start" type="number" formControlName="fuel_start" class="form-control" min="0" step="0.1" />
-          </div>
-
-          <div class="form-group">
-            <label for="fuel_end">Combustible Final (L)</label>
-            <input id="fuel_end" type="number" formControlName="fuel_end" class="form-control" min="0" step="0.1" />
-          </div>
-
-          <div class="full-width calculated-value" *ngIf="fuelConsumed > 0">
-            <i class="fa-solid fa-gas-pump"></i>
-            <strong>Combustible Consumido:</strong> {{ fuelConsumed | number:'1.2-2' }} L
-          </div>
-
-          <div class="form-group full-width">
-            <label for="numero_vale_combustible">
-              N° Vale Combustible
-              <span class="field-hint">(CORP-LA-F-004 — opcional)</span>
-            </label>
-            <input id="numero_vale_combustible" type="text" formControlName="numero_vale_combustible"
-              class="form-control" placeholder="Ej. V-2025-001234" />
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 5: Location -->
-      <div class="form-section full-width">
-        <h3>Ubicación</h3>
-        <div class="section-grid">
-          <div class="form-group full-width">
-            <label for="location">Ubicación / Frente de Trabajo *</label>
-            <div style="display: flex; gap: 1rem;">
-              <input id="location" type="text" formControlName="location" class="form-control" style="flex: 1;" />
-              <button type="button" class="btn btn-accent" (click)="captureGPS()">
-                <i class="fa-solid fa-location-crosshairs"></i> GPS
-              </button>
-            </div>
-            <div class="error-msg" *ngIf="hasError('location')">La ubicación es requerida</div>
-
-            <div class="gps-coordinates" *ngIf="reportForm.get('gps_latitude')?.value">
-              <span class="chip">
-                <i class="fa-solid fa-location-dot"></i>
-                Lat: {{ reportForm.get('gps_latitude')?.value | number:'1.6-6' }}
-              </span>
-              <span class="chip">
-                <i class="fa-solid fa-location-dot"></i>
-                Lon: {{ reportForm.get('gps_longitude')?.value | number:'1.6-6' }}
-              </span>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 6: Work Description -->
-      <div class="form-section full-width">
-        <h3>Descripción del Trabajo</h3>
-        <div class="section-grid">
-          <div class="form-group full-width">
-            <label for="work_description">Actividades Realizadas *</label>
-            <textarea id="work_description" formControlName="work_description" class="form-control" rows="4"
-              maxlength="500" placeholder="Describa las actividades realizadas..."></textarea>
-            <div style="text-align: right; font-size: 12px; color: #666;">
-              {{ reportForm.get('work_description')?.value?.length || 0 }} / 500
-            </div>
-            <div class="error-msg" *ngIf="hasError('work_description')">Requerido</div>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="notes">Observaciones</label>
-            <textarea id="notes" formControlName="notes" class="form-control" rows="3" maxlength="1000"
-              placeholder="Observaciones adicionales..."></textarea>
-          </div>
-
-          <div class="form-group full-width">
-            <label for="weather_conditions">Condiciones Climáticas</label>
-            <app-dropdown formControlName="weather_conditions" [options]="weatherOptions"
-              [placeholder]="'Seleccione...'"></app-dropdown>
-          </div>
-        </div>
-      </div>
-
-      <!-- Section 7: Photos -->
-      <div class="form-section full-width">
-        <h3>Fotografías (Opcional)</h3>
-
-        <div class="photo-upload-area">
-          <input type="file" #photoInput accept="image/*" multiple (change)="onPhotoSelect($event)"
-            style="display: none">
-
-          <button type="button" class="btn btn-primary" (click)="photoInput.click()"
-            [disabled]="uploadedPhotos.length >= maxPhotos" style="margin: 0 auto;">
-            <i class="fa-solid fa-camera"></i>
-            Agregar Fotos ({{ uploadedPhotos.length }} / {{ maxPhotos }})
-          </button>
-
-          <p class="upload-hint">
-            Máximo {{ maxPhotos }} fotos. Tamaño máximo: 5MB por foto
-          </p>
-        </div>
-
-        <div class="photo-preview-grid" *ngIf="uploadedPhotos.length > 0">
-          <div class="photo-preview-item" *ngFor="let photo of uploadedPhotos; let i = index">
-            <img [src]="photo | async" alt="Preview">
-            <div class="photo-overlay">
-              <span class="photo-name">{{ photo.name }}</span>
-              <button class="delete-btn" (click)="removePhoto(i)" type="button">
-                <i class="fa-solid fa-trash"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
-    </form>
-  </div>
+  </form>
 
   <!-- EDT Panel (only show for existing reports) -->
-  <div *ngIf="reportId" class="card form-card" style="margin-top: 24px;">
+  <div *ngIf="reportId" class="edt-panel-wrapper">
     <app-edt-panel [parteDiarioId]="reportId"></app-edt-panel>
   </div>
-</div>
+
+</app-form-container>
