@@ -22,7 +22,7 @@ def upgrade() -> None:
 
     # ── 2. insumo — Recurso maestro ──────────────────────────────────────────
     conn.execute(sa.text("""
-        CREATE TABLE presupuestos.insumo (
+        CREATE TABLE IF NOT EXISTS presupuestos.insumo (
             id                SERIAL PRIMARY KEY,
             codigo            VARCHAR(20) NOT NULL,
             nombre            VARCHAR(255) NOT NULL,
@@ -36,14 +36,14 @@ def upgrade() -> None:
             updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
-        CREATE INDEX idx_insumo_codigo ON presupuestos.insumo(codigo);
-        CREATE INDEX idx_insumo_tenant ON presupuestos.insumo(tenant_id);
-        CREATE INDEX idx_insumo_tipo ON presupuestos.insumo(tipo);
+        CREATE INDEX IF NOT EXISTS idx_insumo_codigo ON presupuestos.insumo(codigo);
+        CREATE INDEX IF NOT EXISTS idx_insumo_tenant ON presupuestos.insumo(tenant_id);
+        CREATE INDEX IF NOT EXISTS idx_insumo_tipo ON presupuestos.insumo(tipo);
     """))
 
     # ── 3. apu — Analisis de Precios Unitarios ───────────────────────────────
     conn.execute(sa.text("""
-        CREATE TABLE presupuestos.apu (
+        CREATE TABLE IF NOT EXISTS presupuestos.apu (
             id                SERIAL PRIMARY KEY,
             codigo            VARCHAR(20) NOT NULL,
             nombre            VARCHAR(255) NOT NULL,
@@ -57,13 +57,13 @@ def upgrade() -> None:
             updated_at        TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
-        CREATE INDEX idx_apu_codigo ON presupuestos.apu(codigo);
-        CREATE INDEX idx_apu_tenant ON presupuestos.apu(tenant_id);
+        CREATE INDEX IF NOT EXISTS idx_apu_codigo ON presupuestos.apu(codigo);
+        CREATE INDEX IF NOT EXISTS idx_apu_tenant ON presupuestos.apu(tenant_id);
     """))
 
     # ── 4. apu_insumo — Lineas de APU (recursión via sub_apu_id) ─────────────
     conn.execute(sa.text("""
-        CREATE TABLE presupuestos.apu_insumo (
+        CREATE TABLE IF NOT EXISTS presupuestos.apu_insumo (
             id                SERIAL PRIMARY KEY,
             apu_id            INTEGER NOT NULL REFERENCES presupuestos.apu(id) ON DELETE CASCADE,
             insumo_id         INTEGER REFERENCES presupuestos.insumo(id),
@@ -80,13 +80,13 @@ def upgrade() -> None:
             CONSTRAINT ck_apu_insumo_ref CHECK (insumo_id IS NOT NULL OR sub_apu_id IS NOT NULL)
         );
 
-        CREATE INDEX idx_apu_insumo_apu ON presupuestos.apu_insumo(apu_id);
-        CREATE INDEX idx_apu_insumo_tenant ON presupuestos.apu_insumo(tenant_id);
+        CREATE INDEX IF NOT EXISTS idx_apu_insumo_apu ON presupuestos.apu_insumo(apu_id);
+        CREATE INDEX IF NOT EXISTS idx_apu_insumo_tenant ON presupuestos.apu_insumo(tenant_id);
     """))
 
     # ── 5. presupuesto — Presupuesto de obra ─────────────────────────────────
     conn.execute(sa.text("""
-        CREATE TABLE presupuestos.presupuesto (
+        CREATE TABLE IF NOT EXISTS presupuestos.presupuesto (
             id                    SERIAL PRIMARY KEY,
             proyecto_id           INTEGER NOT NULL,
             codigo                VARCHAR(50) NOT NULL,
@@ -102,14 +102,14 @@ def upgrade() -> None:
             updated_at            TIMESTAMPTZ NOT NULL DEFAULT NOW()
         );
 
-        CREATE INDEX idx_presupuesto_proyecto ON presupuestos.presupuesto(proyecto_id);
-        CREATE INDEX idx_presupuesto_codigo ON presupuestos.presupuesto(codigo);
-        CREATE INDEX idx_presupuesto_tenant ON presupuestos.presupuesto(tenant_id);
+        CREATE INDEX IF NOT EXISTS idx_presupuesto_proyecto ON presupuestos.presupuesto(proyecto_id);
+        CREATE INDEX IF NOT EXISTS idx_presupuesto_codigo ON presupuestos.presupuesto(codigo);
+        CREATE INDEX IF NOT EXISTS idx_presupuesto_tenant ON presupuestos.presupuesto(tenant_id);
     """))
 
     # ── 6. presupuesto_partida — Partidas del presupuesto ────────────────────
     conn.execute(sa.text("""
-        CREATE TABLE presupuestos.presupuesto_partida (
+        CREATE TABLE IF NOT EXISTS presupuestos.presupuesto_partida (
             id                SERIAL PRIMARY KEY,
             presupuesto_id    INTEGER NOT NULL REFERENCES presupuestos.presupuesto(id) ON DELETE CASCADE,
             edt_id            INTEGER,
@@ -126,8 +126,8 @@ def upgrade() -> None:
             tenant_id         INTEGER NOT NULL DEFAULT 1
         );
 
-        CREATE INDEX idx_partida_presupuesto ON presupuestos.presupuesto_partida(presupuesto_id);
-        CREATE INDEX idx_partida_tenant ON presupuestos.presupuesto_partida(tenant_id);
+        CREATE INDEX IF NOT EXISTS idx_partida_presupuesto ON presupuestos.presupuesto_partida(presupuesto_id);
+        CREATE INDEX IF NOT EXISTS idx_partida_tenant ON presupuestos.presupuesto_partida(tenant_id);
     """))
 
 
