@@ -48,7 +48,7 @@ def _ok_list(data: list[Any]) -> dict[str, Any]:
 # ─── CRUD ────────────────────────────────────────────────────────────────
 
 
-@router.get("/", response_class=ORJSONResponse)
+@router.get("", response_class=ORJSONResponse)
 async def listar_pagos(
     db: SesionDb,
     usuario: UsuarioActual,
@@ -86,7 +86,7 @@ async def obtener_pago(
     return _ok(dto)
 
 
-@router.post("/", response_class=ORJSONResponse, status_code=201)
+@router.post("", response_class=ORJSONResponse, status_code=201)
 async def crear_pago(
     datos: PagoCrear, db: SesionDb, usuario: UsuarioActual
 ) -> dict[str, Any]:

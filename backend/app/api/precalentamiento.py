@@ -12,7 +12,7 @@ from app.utils.respuesta import enviar_exito
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 async def listar_configs(_usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Listar todas las configuraciones de precalentamiento."""
     servicio = ServicioPrecalentamiento(db)

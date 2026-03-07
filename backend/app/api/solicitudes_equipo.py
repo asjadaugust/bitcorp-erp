@@ -11,7 +11,7 @@ from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 async def listar_solicitudes(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -22,7 +22,7 @@ async def listar_solicitudes(
     return enviar_paginado([s.model_dump() for s in sols], pagina=page, limite=limit, total=total)
 
 
-@router.post("/")
+@router.post("")
 async def crear_solicitud(
     datos: SolicitudEquipoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

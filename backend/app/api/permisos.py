@@ -21,7 +21,7 @@ router = APIRouter(
 # ─── Permisos list & create (no path param conflict) ────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_permisos(usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Listar todos los permisos."""
     servicio = ServicioPermiso(db)
@@ -29,7 +29,7 @@ async def listar_permisos(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespons
     return enviar_exito([d.model_dump() for d in datos])
 
 
-@router.post("/")
+@router.post("")
 async def crear_permiso(
     datos: PermisoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

@@ -34,7 +34,7 @@ async def consultar_ruc(ruc: str, usuario: UsuarioActual) -> ORJSONResponse:
 # ─── Provider CRUD ───────────────────────────────────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_proveedores(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -49,7 +49,7 @@ async def listar_proveedores(
     )
 
 
-@router.post("/", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR"))])
+@router.post("", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR"))])
 async def crear_proveedor(
     datos: ProveedorCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

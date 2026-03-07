@@ -16,7 +16,7 @@ from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 async def listar_cotizaciones(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -29,7 +29,7 @@ async def listar_cotizaciones(
     return enviar_paginado([c.model_dump() for c in cots], pagina=page, limite=limit, total=total)
 
 
-@router.post("/", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR", "JEFE_EQUIPO"))])
+@router.post("", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR", "JEFE_EQUIPO"))])
 async def crear_cotizacion(
     datos: CotizacionCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:
