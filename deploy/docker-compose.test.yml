@@ -102,6 +102,10 @@ services:
 networks:
   bitcorp-test-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.30.0.0/16
+          gateway: 172.30.0.1
 
 volumes:
   postgres_test_data:
