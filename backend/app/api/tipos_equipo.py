@@ -11,7 +11,7 @@ from app.utils.respuesta import enviar_exito
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 async def listar_tipos(_usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Listar todos los tipos de equipo activos."""
     servicio = ServicioTipoEquipo(db)

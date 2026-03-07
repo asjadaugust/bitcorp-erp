@@ -83,7 +83,7 @@ async def listar_por_equipo(
 # ─── List / CRUD ─────────────────────────────────────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_mantenimientos(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -96,7 +96,7 @@ async def listar_mantenimientos(
     return enviar_paginado([m.model_dump() for m in mants], pagina=page, limite=limit, total=total)
 
 
-@router.post("/", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR", "JEFE_EQUIPO"))])
+@router.post("", dependencies=[Depends(requerir_roles("ADMIN", "DIRECTOR", "JEFE_EQUIPO"))])
 async def crear_mantenimiento(
     datos: MantenimientoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

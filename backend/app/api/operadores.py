@@ -35,7 +35,7 @@ async def obtener_programacion(
 # ─── List / CRUD ─────────────────────────────────────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_operadores(
     usuario: UsuarioActual,
     db: SesionDb,

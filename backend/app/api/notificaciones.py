@@ -16,7 +16,7 @@ from app.utils.respuesta import (
 router = APIRouter()
 
 
-@router.get("/")
+@router.get("")
 async def listar_notificaciones(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -43,7 +43,7 @@ async def contar_no_leidas(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
     return enviar_exito({"count": count})
 
 
-@router.post("/")
+@router.post("")
 async def crear_notificacion(
     datos: NotificacionCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

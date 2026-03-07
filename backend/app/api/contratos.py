@@ -48,7 +48,7 @@ async def obtener_por_numero(
 # ─── List (paginated) ────────────────────────────────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_contratos(
     usuario: UsuarioActual,
     db: SesionDb,

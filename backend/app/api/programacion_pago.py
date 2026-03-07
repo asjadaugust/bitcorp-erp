@@ -24,7 +24,7 @@ router = APIRouter(
 )
 
 
-@router.get("/")
+@router.get("")
 async def listar_programaciones(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -51,7 +51,7 @@ async def obtener_programacion(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("/")
+@router.post("")
 async def crear_programacion(
     datos: ProgramacionPagoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

@@ -131,7 +131,7 @@ async def registro_valorizaciones(
 # ─── CRUD ────────────────────────────────────────────────────────────────
 
 
-@router.get("/", response_class=ORJSONResponse)
+@router.get("", response_class=ORJSONResponse)
 async def listar_valorizaciones(
     db: SesionDb,
     usuario: UsuarioActual,
@@ -172,7 +172,7 @@ async def obtener_valorizacion(
     return _ok(dto)
 
 
-@router.post("/", response_class=ORJSONResponse, status_code=201)
+@router.post("", response_class=ORJSONResponse, status_code=201)
 async def crear_valorizacion(
     datos: ValorizacionCrear, db: SesionDb, usuario: UsuarioActual
 ) -> dict[str, Any]:

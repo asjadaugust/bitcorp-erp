@@ -59,7 +59,7 @@ async def obtener_disponibilidad(usuario: UsuarioActual, db: SesionDb) -> ORJSON
 # ─── List (paginated) ────────────────────────────────────────────────────
 
 
-@router.get("/")
+@router.get("")
 async def listar_equipos(
     usuario: UsuarioActual,
     db: SesionDb,
