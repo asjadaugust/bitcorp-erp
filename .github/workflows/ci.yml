@@ -56,6 +56,11 @@ jobs:
           cache: pip
       - run: pip install -e ".[dev]"
         working-directory: backend
+      - name: Run database migrations
+        run: alembic upgrade head
+        working-directory: backend
+        env:
+          DATABASE_URL: postgresql+asyncpg://bitcorp:test_password@localhost:5432/bitcorp_test
       - run: python -m pytest tests/ -q
         working-directory: backend
         env:
