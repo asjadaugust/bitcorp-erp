@@ -38,6 +38,11 @@ const API_CACHE_ROUTES = [
   '/api/vales-combustible',
 ];
 
+// Check if a URL path matches any API_CACHE_ROUTES prefix
+function isCacheableApiRoute(pathname) {
+  return API_CACHE_ROUTES.some((route) => pathname.startsWith(route));
+}
+
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
   console.log('[SW] Installing service worker...');
@@ -124,7 +129,11 @@ self.addEventListener('fetch', (event) => {
 
   // Handle API requests
   if (url.pathname.startsWith('/api')) {
-    event.respondWith(handleApiRequest(request));
+    // Only intercept routes that need offline/caching support
+    if (isCacheableApiRoute(url.pathname)) {
+      event.respondWith(handleApiRequest(request));
+    }
+    // All other API routes pass through to network unmodified
     return;
   }
 
@@ -145,11 +154,7 @@ async function handleApiRequest(request) {
   if (request.method === 'GET') {
     try {
       // Force network request by bypassing browser cache
-      const response = await fetch(request.url, {
-        method: request.method,
-        headers: request.headers,
-        cache: 'no-store',
-      });
+      const response = await fetch(new Request(request, { cache: 'no-store' }));
 
       // Cache successful responses
       if (response.ok) {
