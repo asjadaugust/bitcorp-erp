@@ -37,7 +37,7 @@
     "lint:staged": "eslint --fix",
     "format": "prettier --write \"**/*.{ts,js,json,md}\"",
     "commit": "git-cz",
-    "prepare": "husky install",
+    "prepare": "node -e \"if (!process.env.CI) require('child_process').execSync('husky install', {stdio: 'inherit'})\"",
     "api:test": "node scripts/test-api.js",
     "api:test:quick": "bash scripts/run-api-tests.sh quick",
     "api:test:auth": "bash scripts/run-api-tests.sh auth",
