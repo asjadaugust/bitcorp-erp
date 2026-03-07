@@ -23,6 +23,13 @@ if [ ! -d "$BACKUP_DIR" ] || [ -z "$(ls -A "$BACKUP_DIR" 2>/dev/null)" ]; then
     exit 0
 fi
 
+NAS_PORT="${NAS_SSH_PORT:-22}"
+NAS_KEY="${NAS_SSH_KEY:-}"
+SSH_OPTS="-o StrictHostKeyChecking=no -p ${NAS_PORT}"
+if [ -n "$NAS_KEY" ]; then
+    SSH_OPTS="$SSH_OPTS -i ${NAS_KEY}"
+fi
+
 echo "Syncing backups to NAS: $NAS_TARGET"
-rsync -avz --progress "$BACKUP_DIR/" "$NAS_TARGET/"
+rsync -avz --progress -e "ssh ${SSH_OPTS}" "$BACKUP_DIR/" "$NAS_TARGET/"
 echo "Sync complete: $(date)"

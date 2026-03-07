@@ -199,6 +199,40 @@ sudo journalctl -u bitcorp-webhook@$USER -f
 
 ---
 
+## NAS Backup Sync (Optional)
+
+DB backups are stored locally in `deploy/backups/`. To sync them to the Synology NAS:
+
+### One-time: trust the NAS host key
+
+```bash
+ssh-keyscan -p 2230 192.168.0.13 >> ~/.ssh/known_hosts
+```
+
+### Set env vars in `deploy/.env.prod`
+
+```env
+NAS_SSH_TARGET=mohammad@192.168.0.13:/volume1/web/bitcorp-backup
+NAS_SSH_PORT=2230
+NAS_SSH_KEY=~/.ssh/nas_backup
+```
+
+### Run manually
+
+```bash
+~/bitcorp-erp/deploy/sync-backups.sh
+```
+
+### Or schedule with cron (daily at 3am)
+
+```bash
+crontab -e
+# Add:
+0 3 * * * /home/$USER/bitcorp-erp/deploy/sync-backups.sh >> /home/$USER/bitcorp-erp/deploy/logs/nas-sync.log 2>&1
+```
+
+---
+
 ## Setup Checklist
 
 - [ ] Create `develop` branch: `git checkout main && git checkout -b develop && git push -u origin develop`
