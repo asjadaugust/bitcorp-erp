@@ -122,7 +122,7 @@ export class AeroDayOfWeekComponent implements ControlValueAccessor {
   days = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
 
   /** Bitmask or array of selected day indices (0=Monday, 6=Sunday) */
-  selectedDays: Set<number> = new Set();
+  selectedDays = new Set<number>();
 
   onChange: (value: number[]) => void = () => {};
   onTouched: () => void = () => {};

@@ -41,21 +41,33 @@ export class SigService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/sig`;
 
-  getDocumentsPaginated(params?: { page?: number; limit?: number; tipo?: string; estado?: string }): Observable<PaginatedResponse<SigDocument>> {
+  getDocumentsPaginated(params?: {
+    page?: number;
+    limit?: number;
+    tipo?: string;
+    estado?: string;
+  }): Observable<PaginatedResponse<SigDocument>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.tipo) httpParams = httpParams.set('tipo', params.tipo);
     if (params?.estado) httpParams = httpParams.set('estado', params.estado);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/documents`, { params: httpParams }).pipe(
-      map((response) => {
-        const data = ((response?.['data'] ?? response) as SigDocument[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<SigDocument>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
-        };
-        return { data: Array.isArray(data) ? data : [], pagination };
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/documents`, { params: httpParams })
+      .pipe(
+        map((response) => {
+          const data = (response?.['data'] ?? response) as SigDocument[];
+          const pagination = (response?.[
+            'pagination'
+          ] as PaginatedResponse<SigDocument>['pagination']) ?? {
+            page: 1,
+            limit: params?.limit ?? 20,
+            total: Array.isArray(data) ? data.length : 0,
+            total_pages: 1,
+          };
+          return { data: Array.isArray(data) ? data : [], pagination };
+        })
+      );
   }
 
   getDocuments(): Observable<SigDocument[]> {

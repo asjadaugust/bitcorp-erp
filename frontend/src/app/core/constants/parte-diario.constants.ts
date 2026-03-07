@@ -33,15 +33,15 @@ export interface EstadoConfig {
 }
 
 export const PARTE_DIARIO_ESTADOS: Record<string, EstadoConfig> = {
-  BORRADOR:             { label: 'Borrador',          badgeClass: 'neutral' },
-  PENDIENTE:            { label: 'Pendiente',         badgeClass: 'info' },
-  APROBADO:             { label: 'Aprobado',          badgeClass: 'success' },
-  RECHAZADO:            { label: 'Rechazado',         badgeClass: 'error' },
-  APROBADO_SUPERVISOR:  { label: 'Aprob. Supervisor', badgeClass: 'info' },
-  REVISADO_COSTOS:      { label: 'Rev. Costos',       badgeClass: 'info' },
-  PENDIENTE_FINANZAS:   { label: 'Pend. Finanzas',    badgeClass: 'info' },
-  APROBADO_FINANZAS:    { label: 'Aprob. Finanzas',   badgeClass: 'success' },
-  ENVIADO:              { label: 'Enviado',            badgeClass: 'info' },
+  BORRADOR: { label: 'Borrador', badgeClass: 'neutral' },
+  PENDIENTE: { label: 'Pendiente', badgeClass: 'info' },
+  APROBADO: { label: 'Aprobado', badgeClass: 'success' },
+  RECHAZADO: { label: 'Rechazado', badgeClass: 'error' },
+  APROBADO_SUPERVISOR: { label: 'Aprob. Supervisor', badgeClass: 'info' },
+  REVISADO_COSTOS: { label: 'Rev. Costos', badgeClass: 'info' },
+  PENDIENTE_FINANZAS: { label: 'Pend. Finanzas', badgeClass: 'info' },
+  APROBADO_FINANZAS: { label: 'Aprob. Finanzas', badgeClass: 'success' },
+  ENVIADO: { label: 'Enviado', badgeClass: 'info' },
 };
 
 export const ESTADO_FILTER_OPTIONS: LabelValue[] = Object.entries(PARTE_DIARIO_ESTADOS).map(

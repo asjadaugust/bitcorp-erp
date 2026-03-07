@@ -46,7 +46,8 @@ async def test_utilizacion_equipo_periodo() -> None:
         if not equipos:
             pytest.skip("No hay equipos")
         equipo_id = equipos[0]["id"]
-        resp = await c.get(f"/api/analytics/equipment/{equipo_id}/utilization?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
+        url = f"/api/analytics/equipment/{equipo_id}/utilization"
+        resp = await c.get(f"{url}?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
     assert resp.status_code == 200
     assert resp.json()["success"] is True
 
@@ -58,8 +59,8 @@ async def test_utilizacion_equipo_inexistente() -> None:
         resp = await c.get("/api/analytics/equipment/99999/utilization")
     assert resp.status_code == 200
     d = resp.json()["data"]
-    assert isinstance(d["horas_totales"], (int, float))
-    assert isinstance(d["horas_trabajadas"], (int, float))
+    assert isinstance(d["horas_totales"], int | float)
+    assert isinstance(d["horas_trabajadas"], int | float)
 
 
 # --- Tendencia de utilización ---
@@ -87,7 +88,8 @@ async def test_tendencia_utilizacion() -> None:
 async def test_tendencia_utilizacion_meses() -> None:
     """Debe aceptar parámetro months."""
     async with await _cliente_auth() as c:
-        resp = await c.get("/api/analytics/equipment/1/utilization-trend?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
+        url = "/api/analytics/equipment/1/utilization-trend"
+        resp = await c.get(f"{url}?fecha_inicio=2025-01-01&fecha_fin=2025-03-31")
     assert resp.status_code == 200
 
 
@@ -170,7 +172,7 @@ async def test_metricas_mantenimiento_formato() -> None:
         resp = await c.get("/api/analytics/equipment/1/maintenance")
     d = resp.json()["data"]
     assert isinstance(d["total_mantenimientos"], int)
-    assert isinstance(d["costo_total"], (int, float))
+    assert isinstance(d["costo_total"], int | float)
     assert isinstance(d["mantenimientos_pendientes"], int)
 
 
@@ -180,5 +182,5 @@ async def test_analitica_tipos_numericos() -> None:
     async with await _cliente_auth() as c:
         resp = await c.get("/api/analytics/equipment/99999/utilization")
     d = resp.json()["data"]
-    assert isinstance(d["horas_totales"], (int, float))
-    assert isinstance(d["tasa_utilizacion"], (int, float))
+    assert isinstance(d["horas_totales"], int | float)
+    assert isinstance(d["tasa_utilizacion"], int | float)

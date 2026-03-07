@@ -67,21 +67,33 @@ export class InventoryService {
   private apiUrl = `${environment.apiUrl}/logistics`;
   private http = inject(HttpClient);
 
-  getProductsPaginated(params?: { page?: number; limit?: number; categoria?: string; search?: string }): Observable<PaginatedResponse<Product>> {
+  getProductsPaginated(params?: {
+    page?: number;
+    limit?: number;
+    categoria?: string;
+    search?: string;
+  }): Observable<PaginatedResponse<Product>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.categoria) httpParams = httpParams.set('categoria', params.categoria);
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/products`, { params: httpParams }).pipe(
-      map((response) => {
-        const data = ((response?.['data'] ?? response) as Product[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<Product>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
-        };
-        return { data: Array.isArray(data) ? data : [], pagination };
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/products`, { params: httpParams })
+      .pipe(
+        map((response) => {
+          const data = (response?.['data'] ?? response) as Product[];
+          const pagination = (response?.[
+            'pagination'
+          ] as PaginatedResponse<Product>['pagination']) ?? {
+            page: 1,
+            limit: params?.limit ?? 20,
+            total: Array.isArray(data) ? data.length : 0,
+            total_pages: 1,
+          };
+          return { data: Array.isArray(data) ? data : [], pagination };
+        })
+      );
   }
 
   getProducts(): Observable<Product[]> {
@@ -106,21 +118,34 @@ export class InventoryService {
     return this.http.put<Product>(`${this.apiUrl}/products/${id}`, product);
   }
 
-  getMovementsPaginated(params?: { page?: number; limit?: number; tipo?: string; producto_id?: number }): Observable<PaginatedResponse<Movement>> {
+  getMovementsPaginated(params?: {
+    page?: number;
+    limit?: number;
+    tipo?: string;
+    producto_id?: number;
+  }): Observable<PaginatedResponse<Movement>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.tipo) httpParams = httpParams.set('tipo', params.tipo);
-    if (params?.producto_id) httpParams = httpParams.set('producto_id', params.producto_id.toString());
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/movements`, { params: httpParams }).pipe(
-      map((response) => {
-        const data = ((response?.['data'] ?? response) as Movement[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<Movement>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
-        };
-        return { data: Array.isArray(data) ? data : [], pagination };
-      })
-    );
+    if (params?.producto_id)
+      httpParams = httpParams.set('producto_id', params.producto_id.toString());
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/movements`, { params: httpParams })
+      .pipe(
+        map((response) => {
+          const data = (response?.['data'] ?? response) as Movement[];
+          const pagination = (response?.[
+            'pagination'
+          ] as PaginatedResponse<Movement>['pagination']) ?? {
+            page: 1,
+            limit: params?.limit ?? 20,
+            total: Array.isArray(data) ? data.length : 0,
+            total_pages: 1,
+          };
+          return { data: Array.isArray(data) ? data : [], pagination };
+        })
+      );
   }
 
   getMovements(): Observable<Movement[]> {

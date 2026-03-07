@@ -63,7 +63,11 @@ export class ExcelExportService {
    * @param filename Output filename
    */
   exportMultipleSheets(
-    sheets: { data: Record<string, unknown>[]; sheetName: string; columnHeaders?: Record<string, string> }[],
+    sheets: {
+      data: Record<string, unknown>[];
+      sheetName: string;
+      columnHeaders?: Record<string, string>;
+    }[],
     filename = 'export'
   ): void {
     const workbook = XLSX.utils.book_new();

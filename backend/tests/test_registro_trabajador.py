@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 from app.main import app
 from tests.conftest import obtener_token_admin
 
-
 BASE = "/api/hr/worker-registry"
 
 

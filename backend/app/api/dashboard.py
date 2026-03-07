@@ -164,7 +164,8 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
                     COUNT(*) FILTER (WHERE pd.fecha = :hoy) AS partes_hoy,
                     COUNT(*) FILTER (WHERE pd.fecha >= :semana) AS partes_semana,
                     COUNT(*) FILTER (WHERE pd.fecha >= :mes) AS partes_mes,
-                    COALESCE(SUM(pd.horas_trabajadas) FILTER (WHERE pd.fecha >= :mes), 0) AS horas_mes
+                    COALESCE(SUM(pd.horas_trabajadas) FILTER (
+                        WHERE pd.fecha >= :mes), 0) AS horas_mes
                 FROM equipo.parte_diario pd
                 JOIN rrhh.trabajador t ON t.id = pd.trabajador_id
                 JOIN sistema.usuario u ON u.dni = t.dni
@@ -206,7 +207,11 @@ async def operator_summary(usuario: UsuarioActual, db: SesionDb) -> ORJSONRespon
             "fecha": str(row["fecha"]),
             "estado": row["estado"],
             "codigo": row["codigo"],
-            "horas_trabajadas": float(row["horas_trabajadas"]) if row["horas_trabajadas"] is not None else None,
+            "horas_trabajadas": (
+                float(row["horas_trabajadas"])
+                if row["horas_trabajadas"] is not None
+                else None
+            ),
         }
         for row in filas_recent
     ]

@@ -52,4 +52,4 @@ import { CommonModule } from '@angular/common';
     `,
   ],
 })
-export class ActionsContainerComponent { }
+export class ActionsContainerComponent {}

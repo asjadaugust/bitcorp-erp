@@ -13,7 +13,13 @@ export interface CardInfoItem {
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="aero-card" (click)="onCardClick()" (keydown.enter)="onCardClick()" tabindex="0" role="button">
+    <div
+      class="aero-card"
+      (click)="onCardClick()"
+      (keydown.enter)="onCardClick()"
+      tabindex="0"
+      role="button"
+    >
       <!-- Header -->
       <div class="aero-card__header">
         <div class="aero-card__status-row">
@@ -64,7 +70,13 @@ export interface CardInfoItem {
         <div class="aero-card__meta">
           <span *ngIf="timestamp"> Actualizado: {{ timestamp | date: 'dd/MM/yy HH:mm' }} </span>
         </div>
-        <div class="aero-card__actions" (click)="$event.stopPropagation()" (keydown.enter)="$event.stopPropagation()" tabindex="0" role="toolbar">
+        <div
+          class="aero-card__actions"
+          (click)="$event.stopPropagation()"
+          (keydown.enter)="$event.stopPropagation()"
+          tabindex="0"
+          role="toolbar"
+        >
           <ng-content select="[actions]"></ng-content>
         </div>
       </div>

@@ -44,7 +44,12 @@ export class TenderService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/tenders`;
 
-  getTendersPaginated(params?: { page?: number; limit?: number; estado?: string; tipo?: string }): Observable<PaginatedResponse<Tender>> {
+  getTendersPaginated(params?: {
+    page?: number;
+    limit?: number;
+    estado?: string;
+    tipo?: string;
+  }): Observable<PaginatedResponse<Tender>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
@@ -52,9 +57,14 @@ export class TenderService {
     if (params?.tipo) httpParams = httpParams.set('tipo', params.tipo);
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params: httpParams }).pipe(
       map((response) => {
-        const data = ((response?.['data'] ?? response) as Tender[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<Tender>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        const data = (response?.['data'] ?? response) as Tender[];
+        const pagination = (response?.[
+          'pagination'
+        ] as PaginatedResponse<Tender>['pagination']) ?? {
+          page: 1,
+          limit: params?.limit ?? 20,
+          total: Array.isArray(data) ? data.length : 0,
+          total_pages: 1,
         };
         return { data: Array.isArray(data) ? data : [], pagination };
       })

@@ -432,8 +432,8 @@ export class AeroInputComponent implements ControlValueAccessor {
   focused = false;
   showPassword = false;
 
-  onChange: (value: unknown) => void = () => { };
-  onTouched: () => void = () => { };
+  onChange: (value: unknown) => void = () => {};
+  onTouched: () => void = () => {};
 
   onInput(event: Event): void {
     const val = (event.target as HTMLInputElement).value;

@@ -92,30 +92,43 @@ export class AdministrationService {
   private providersUrl = `${environment.apiUrl}/providers`;
 
   // Cost Centers
-  getCostCentersPaginated(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<CostCenter>> {
+  getCostCentersPaginated(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Observable<PaginatedResponse<CostCenter>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/cost-centers`, { params: httpParams }).pipe(
-      map((response) => {
-        const data = ((response?.['data'] ?? response) as CostCenter[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<CostCenter>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
-        };
-        return { data: Array.isArray(data) ? data : [], pagination };
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/cost-centers`, { params: httpParams })
+      .pipe(
+        map((response) => {
+          const data = (response?.['data'] ?? response) as CostCenter[];
+          const pagination = (response?.[
+            'pagination'
+          ] as PaginatedResponse<CostCenter>['pagination']) ?? {
+            page: 1,
+            limit: params?.limit ?? 20,
+            total: Array.isArray(data) ? data.length : 0,
+            total_pages: 1,
+          };
+          return { data: Array.isArray(data) ? data : [], pagination };
+        })
+      );
   }
 
   getCostCenters(): Observable<CostCenter[]> {
-    return this.http.get<{ data: CostCenter[] }>(`${this.apiUrl}/cost-centers`).pipe(map((res) => res.data || res as unknown as CostCenter[]));
+    return this.http
+      .get<{ data: CostCenter[] }>(`${this.apiUrl}/cost-centers`)
+      .pipe(map((res) => res.data || (res as unknown as CostCenter[])));
   }
 
   getCostCenter(id: string): Observable<CostCenter> {
     return this.http
       .get<{ data: CostCenter }>(`${this.apiUrl}/cost-centers/${id}`)
-      .pipe(map((res) => res.data || res as unknown as CostCenter));
+      .pipe(map((res) => res.data || (res as unknown as CostCenter)));
   }
 
   createCostCenter(costCenter: Partial<CostCenter>): Observable<CostCenter> {
@@ -131,7 +144,9 @@ export class AdministrationService {
   }
 
   getProviders(): Observable<Provider[]> {
-    return this.http.get<{ data: Provider[] }>(this.providersUrl).pipe(map((res) => res.data || res as unknown as Provider[]));
+    return this.http
+      .get<{ data: Provider[] }>(this.providersUrl)
+      .pipe(map((res) => res.data || (res as unknown as Provider[])));
   }
 
   // Accounts Payable (Spanish snake_case DTOs)
@@ -148,7 +163,9 @@ export class AdministrationService {
   }
 
   getAccountsPayableById(id: number): Observable<AccountsPayable> {
-    return this.http.get<{ data: AccountsPayable }>(`${this.apUrl}/${id}`).pipe(map((res) => res.data || res as unknown as AccountsPayable));
+    return this.http
+      .get<{ data: AccountsPayable }>(`${this.apUrl}/${id}`)
+      .pipe(map((res) => res.data || (res as unknown as AccountsPayable)));
   }
 
   createAccountsPayable(data: Partial<AccountsPayable>): Observable<AccountsPayable> {
@@ -164,11 +181,18 @@ export class AdministrationService {
   }
 
   getPendingAccountsPayable(): Observable<AccountsPayable[]> {
-    return this.http.get<{ data: AccountsPayable[] }>(`${this.apUrl}/pending`).pipe(map((res) => res.data || res as unknown as AccountsPayable[]));
+    return this.http
+      .get<{ data: AccountsPayable[] }>(`${this.apUrl}/pending`)
+      .pipe(map((res) => res.data || (res as unknown as AccountsPayable[])));
   }
 
   // Payment Schedules (English properties from Entity)
-  getPaymentSchedulesPaginated(params?: { page?: number; limit?: number; estado?: string; search?: string }): Observable<PaginatedResponse<PaymentSchedule>> {
+  getPaymentSchedulesPaginated(params?: {
+    page?: number;
+    limit?: number;
+    estado?: string;
+    search?: string;
+  }): Observable<PaginatedResponse<PaymentSchedule>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
@@ -176,9 +200,14 @@ export class AdministrationService {
     if (params?.search) httpParams = httpParams.set('search', params.search);
     return this.http.get<Record<string, unknown>>(this.psUrl, { params: httpParams }).pipe(
       map((response) => {
-        const data = ((response?.['data'] ?? response) as PaymentSchedule[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<PaymentSchedule>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        const data = (response?.['data'] ?? response) as PaymentSchedule[];
+        const pagination = (response?.[
+          'pagination'
+        ] as PaginatedResponse<PaymentSchedule>['pagination']) ?? {
+          page: 1,
+          limit: params?.limit ?? 20,
+          total: Array.isArray(data) ? data.length : 0,
+          total_pages: 1,
         };
         return { data: Array.isArray(data) ? data : [], pagination };
       })
@@ -186,11 +215,15 @@ export class AdministrationService {
   }
 
   getPaymentSchedules(): Observable<PaymentSchedule[]> {
-    return this.http.get<{ data: PaymentSchedule[] }>(this.psUrl).pipe(map((res) => res.data || res as unknown as PaymentSchedule[]));
+    return this.http
+      .get<{ data: PaymentSchedule[] }>(this.psUrl)
+      .pipe(map((res) => res.data || (res as unknown as PaymentSchedule[])));
   }
 
   getPaymentScheduleById(id: number): Observable<PaymentSchedule> {
-    return this.http.get<{ data: PaymentSchedule }>(`${this.psUrl}/${id}`).pipe(map((res) => res.data || res as unknown as PaymentSchedule));
+    return this.http
+      .get<{ data: PaymentSchedule }>(`${this.psUrl}/${id}`)
+      .pipe(map((res) => res.data || (res as unknown as PaymentSchedule)));
   }
 
   createPaymentSchedule(data: Partial<PaymentSchedule>): Observable<PaymentSchedule> {

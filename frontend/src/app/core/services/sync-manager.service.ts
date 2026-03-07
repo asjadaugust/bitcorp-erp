@@ -252,9 +252,7 @@ export class SyncManager {
   /**
    * Get all photos for a given local report ID
    */
-  async getPhotosForReport(
-    reportLocalId: number
-  ): Promise<
+  async getPhotosForReport(reportLocalId: number): Promise<
     {
       id: number;
       reportLocalId: number;

@@ -87,7 +87,10 @@ def _a_lista_dto(v: ValorizacionEquipo) -> ValorizacionListaDto:
     eq = v.equipo_rel
     ct = v.contrato_rel
     prov = ct.proveedor if ct else None
-    igv = _f(v.igv_monto) if v.igv_monto is not None else round(_f(v.total_con_igv) - _f(v.total_valorizado), 2)
+    igv = (
+        _f(v.igv_monto) if v.igv_monto is not None
+        else round(_f(v.total_con_igv) - _f(v.total_valorizado), 2)
+    )
     return ValorizacionListaDto(
         id=v.id,
         equipo_id=v.equipo_id,
@@ -902,7 +905,12 @@ class ServicioValorizacion:
             "total_uso": total_uso,
             "rendimiento": round(rendimiento, 4),
             "ratio_control": round(ratio_control, 4),
-            "diferencia": round(gal_f - (total_uso * ratio_control) if medidor != "ODOMETRO" else gal_f - (total_uso / ratio_control if ratio_control > 0 else 0), 4),
+            "diferencia": round(
+                gal_f - (total_uso * ratio_control)
+                if medidor != "ODOMETRO"
+                else gal_f - (total_uso / ratio_control if ratio_control > 0 else 0),
+                4,
+            ),
             "exceso": round(exceso, 4),
             "precio_unitario": round(precio_prom, 4),
             "importe_exceso": round(importe_exceso, 4),
@@ -978,10 +986,17 @@ class ServicioValorizacion:
             tipo_tarifa=contrato.tipo_tarifa if contrato else None,
             tarifa=float(contrato.tarifa) if contrato and contrato.tarifa else None,
             minimo_por=contrato.minimo_por if contrato else None,
-            cantidad_minima=float(contrato.cantidad_minima) if contrato and contrato.cantidad_minima else None,
+            cantidad_minima=(
+                float(contrato.cantidad_minima)
+                if contrato and contrato.cantidad_minima else None
+            ),
             moneda=contrato.moneda if contrato else None,
             tipo_cambio=_num(val.tipo_cambio),
-            precio_manipuleo=float(contrato.precio_manipuleo) if contrato and contrato.precio_manipuleo is not None else None,
+            precio_manipuleo=(
+                float(contrato.precio_manipuleo)
+                if contrato and contrato.precio_manipuleo is not None
+                else None
+            ),
             # Financial — derive cantidad when horas_trabajadas is NULL (legacy)
             cantidad_a_valorizar=self._cantidad_legacy(val, contrato),
             precio_unitario=float(contrato.tarifa) if contrato and contrato.tarifa else 0,
@@ -1061,7 +1076,10 @@ class ServicioValorizacion:
         tipo_tarifa = (contrato.tipo_tarifa or "HORA").upper() if contrato else "HORA"
         minimo_por = (contrato.minimo_por or "").upper() if contrato else ""
         cantidad_minima = float(contrato.cantidad_minima or 0) if contrato else 0
-        medidor = (val.equipo_rel.medidor_uso or "HOROMETRO").upper() if val.equipo_rel else "HOROMETRO"
+        medidor = (
+            (val.equipo_rel.medidor_uso or "HOROMETRO").upper()
+            if val.equipo_rel else "HOROMETRO"
+        )
 
         reportes = await self._cargar_reportes(
             val.equipo_id, val.fecha_inicio, val.fecha_fin
@@ -1330,7 +1348,10 @@ class ServicioValorizacion:
         exceso = max(0, exceso)
         a.exceso_combustible = round(exceso, 4)
         a.importe_exceso = round(exceso * pu, 4)
-        a.diferencia = round(gal - (uso * rc if tipo != "ODOMETRO" else (uso / rc if rc > 0 else 0)), 4)
+        a.diferencia = round(
+            gal - (uso * rc if tipo != "ODOMETRO" else (uso / rc if rc > 0 else 0)),
+            4,
+        )
 
         await self.db.commit()
         await self.db.refresh(a)

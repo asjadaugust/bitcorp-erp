@@ -266,11 +266,17 @@ async def test_presupuestos_total_actualiza() -> None:
         # Add two partidas
         await c.post(
             f"/api/presupuestos/{pres_id}/partidas",
-            json={"codigo": "T01", "descripcion": "P1", "unidad_medida": "m3", "metrado": 10, "precio_unitario": 100},
+            json={
+                "codigo": "T01", "descripcion": "P1",
+                "unidad_medida": "m3", "metrado": 10, "precio_unitario": 100,
+            },
         )
         resp = await c.post(
             f"/api/presupuestos/{pres_id}/partidas",
-            json={"codigo": "T02", "descripcion": "P2", "unidad_medida": "m2", "metrado": 20, "precio_unitario": 50},
+            json={
+                "codigo": "T02", "descripcion": "P2",
+                "unidad_medida": "m2", "metrado": 20, "precio_unitario": 50,
+            },
         )
     datos = resp.json()["data"]
     # Total = (10 × 100) + (20 × 50) = 1000 + 1000 = 2000
@@ -291,7 +297,10 @@ async def test_presupuestos_recalcular() -> None:
         # Add partida with manual price
         await c.post(
             f"/api/presupuestos/{pres_id}/partidas",
-            json={"codigo": "RC01", "descripcion": "Recalc", "unidad_medida": "m3", "metrado": 10, "precio_unitario": 50},
+            json={
+                "codigo": "RC01", "descripcion": "Recalc",
+                "unidad_medida": "m3", "metrado": 10, "precio_unitario": 50,
+            },
         )
 
         # Recalculate

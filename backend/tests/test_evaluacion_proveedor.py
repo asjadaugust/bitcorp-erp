@@ -8,7 +8,6 @@ from httpx import ASGITransport, AsyncClient
 from app.main import app
 from tests.conftest import obtener_token_admin
 
-
 BASE = "/api/providers/evaluations"
 
 
@@ -139,7 +138,10 @@ async def test_scoring_ranges() -> None:
             detalle = resp.json()["data"]
             assert (
                 detalle["resultado"] == resultado_esperado
-            ), f"puntaje={puntaje}: expected resultado={resultado_esperado}, got={detalle['resultado']}"
+            ), (
+                f"puntaje={puntaje}: expected resultado="
+                f"{resultado_esperado}, got={detalle['resultado']}"
+            )
             assert (
                 detalle["accion"] == accion_esperada
             ), f"puntaje={puntaje}: expected accion={accion_esperada}, got={detalle['accion']}"

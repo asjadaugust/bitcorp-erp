@@ -30,10 +30,7 @@ import {
   AeroDropdownComponent,
   DropdownOption as AeroDropdownOption,
 } from '../../../core/design-system';
-import {
-  TURNO_OPTIONS,
-  WEATHER_OPTIONS,
-} from '../../../core/constants/parte-diario.constants';
+import { TURNO_OPTIONS, WEATHER_OPTIONS } from '../../../core/constants/parte-diario.constants';
 import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-breadcrumbs.component';
 
 @Component({
@@ -86,7 +83,12 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
         <app-form-section title="Informacion General" icon="fa-circle-info" [columns]="2">
           <div class="form-group">
             <label class="form-label required">Fecha</label>
-            <input type="date" formControlName="fecha" class="form-control" [readonly]="isViewMode" />
+            <input
+              type="date"
+              formControlName="fecha"
+              class="form-control"
+              [readonly]="isViewMode"
+            />
             <div class="error-msg" *ngIf="getFieldError('fecha')">{{ getFieldError('fecha') }}</div>
           </div>
           <aero-dropdown
@@ -164,19 +166,46 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
         <app-form-section title="Horario de Trabajo" icon="fa-clock" [columns]="2">
           <div class="form-group">
             <label class="form-label required">Hora de Inicio</label>
-            <input type="time" formControlName="hora_inicio" class="form-control" [readonly]="isViewMode" />
-            <div class="error-msg" *ngIf="getFieldError('hora_inicio')">{{ getFieldError('hora_inicio') }}</div>
+            <input
+              type="time"
+              formControlName="hora_inicio"
+              class="form-control"
+              [readonly]="isViewMode"
+            />
+            <div class="error-msg" *ngIf="getFieldError('hora_inicio')">
+              {{ getFieldError('hora_inicio') }}
+            </div>
           </div>
           <div class="form-group">
             <label class="form-label required">Hora de Fin</label>
-            <input type="time" formControlName="hora_fin" class="form-control" [readonly]="isViewMode" />
-            <div class="error-msg" *ngIf="getFieldError('hora_fin')">{{ getFieldError('hora_fin') }}</div>
+            <input
+              type="time"
+              formControlName="hora_fin"
+              class="form-control"
+              [readonly]="isViewMode"
+            />
+            <div class="error-msg" *ngIf="getFieldError('hora_fin')">
+              {{ getFieldError('hora_fin') }}
+            </div>
           </div>
           <div class="form-group full-width">
             <label class="form-label required">Lugar de Salida</label>
             <div class="gps-field">
-              <input type="text" formControlName="lugar_salida" class="form-control" placeholder="Ubicacion / frente de trabajo" [readonly]="isViewMode" />
-              <aero-button *ngIf="!isViewMode" variant="secondary" iconLeft="fa-location-crosshairs" [loading]="capturingGPS" (clicked)="captureGPS()">GPS</aero-button>
+              <input
+                type="text"
+                formControlName="lugar_salida"
+                class="form-control"
+                placeholder="Ubicacion / frente de trabajo"
+                [readonly]="isViewMode"
+              />
+              <aero-button
+                *ngIf="!isViewMode"
+                variant="secondary"
+                iconLeft="fa-location-crosshairs"
+                [loading]="capturingGPS"
+                (clicked)="captureGPS()"
+                >GPS</aero-button
+              >
             </div>
           </div>
         </app-form-section>
@@ -343,9 +372,12 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
                       />
                     </td>
                     <td>
-                      <aero-dropdown formControlName="edt_id"
-                        [options]="edtOptions" [searchable]="true"
-                        placeholder="EDT...">
+                      <aero-dropdown
+                        formControlName="edt_id"
+                        [options]="edtOptions"
+                        [searchable]="true"
+                        placeholder="EDT..."
+                      >
                       </aero-dropdown>
                     </td>
                     <td>
@@ -1115,8 +1147,14 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   lightboxOpen = false;
   lightboxIndex = 0;
 
-  turnoOptions: AeroDropdownOption[] = TURNO_OPTIONS.map(o => ({ label: o.label, value: o.value }));
-  weatherOptions: AeroDropdownOption[] = WEATHER_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  turnoOptions: AeroDropdownOption[] = TURNO_OPTIONS.map((o) => ({
+    label: o.label,
+    value: o.value,
+  }));
+  weatherOptions: AeroDropdownOption[] = WEATHER_OPTIONS.map((o) => ({
+    label: o.label,
+    value: o.value,
+  }));
   edtOptions: AeroDropdownOption[] = [];
 
   get projectOptions(): DropdownOption[] {

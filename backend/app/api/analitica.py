@@ -2,7 +2,6 @@
 """
 
 from datetime import date, timedelta
-from typing import Optional
 
 from fastapi import APIRouter, Depends, Query
 from fastapi.responses import ORJSONResponse
@@ -21,8 +20,8 @@ async def obtener_utilizacion_equipo(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    fecha_inicio: Optional[date] = Query(default=None),
-    fecha_fin: Optional[date] = Query(default=None),
+    fecha_inicio: date | None = Query(default=None),
+    fecha_fin: date | None = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener utilización de un equipo."""
     fin = fecha_fin or date.today()
@@ -37,8 +36,8 @@ async def obtener_tendencia_utilizacion(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    fecha_inicio: Optional[date] = Query(default=None),
-    fecha_fin: Optional[date] = Query(default=None),
+    fecha_inicio: date | None = Query(default=None),
+    fecha_fin: date | None = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener tendencia diaria de utilización."""
     fin = fecha_fin or date.today()
@@ -52,8 +51,8 @@ async def obtener_tendencia_utilizacion(
 async def obtener_utilizacion_flota(
     usuario: UsuarioActual,
     db: SesionDb,
-    fecha_inicio: Optional[date] = Query(default=None),
-    fecha_fin: Optional[date] = Query(default=None),
+    fecha_inicio: date | None = Query(default=None),
+    fecha_fin: date | None = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener utilización de toda la flota."""
     fin = fecha_fin or date.today()
@@ -68,8 +67,8 @@ async def obtener_metricas_combustible(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    fecha_inicio: Optional[date] = Query(default=None),
-    fecha_fin: Optional[date] = Query(default=None),
+    fecha_inicio: date | None = Query(default=None),
+    fecha_fin: date | None = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener métricas de combustible de un equipo."""
     fin = fecha_fin or date.today()
@@ -84,8 +83,8 @@ async def obtener_tendencia_combustible(
     equipo_id: int,
     usuario: UsuarioActual,
     db: SesionDb,
-    fecha_inicio: Optional[date] = Query(default=None),
-    fecha_fin: Optional[date] = Query(default=None),
+    fecha_inicio: date | None = Query(default=None),
+    fecha_fin: date | None = Query(default=None),
 ) -> ORJSONResponse:
     """Obtener tendencia diaria de combustible."""
     fin = fecha_fin or date.today()

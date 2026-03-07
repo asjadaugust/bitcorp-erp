@@ -6,7 +6,7 @@ Migradas desde las tablas legacy tbl_SUNAT01, tbl_SUNAT06, tbl_SUNAT10, tbl_SUNA
 
 from datetime import datetime
 
-from sqlalchemy import Boolean, DateTime, Integer, String, Text, func
+from sqlalchemy import Boolean, DateTime, Integer, String, func
 from sqlalchemy.orm import Mapped, mapped_column
 
 from app.modelos.base import Base

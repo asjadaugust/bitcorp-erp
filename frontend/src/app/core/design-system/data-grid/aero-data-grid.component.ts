@@ -264,7 +264,9 @@ export interface DataGridSortEvent {
                   <ng-container *ngIf="col.type === 'number'">
                     <span class="aero-datagrid__number">
                       {{
-                        row[col.key] != null ? (row[col.key] | number: col.format || '1.2-2') : '—'
+                        row[col.key] !== null && row[col.key] !== undefined
+                          ? (row[col.key] | number: col.format || '1.2-2')
+                          : '—'
                       }}
                     </span>
                   </ng-container>
@@ -278,7 +280,7 @@ export interface DataGridSortEvent {
 
                   <!-- Default Text Column -->
                   <ng-container *ngIf="!col.type || col.type === 'text'">
-                    {{ row[col.key] != null ? row[col.key] : '—' }}
+                    {{ row[col.key] !== null && row[col.key] !== undefined ? row[col.key] : '—' }}
                   </ng-container>
 
                   <!-- Checkbox Column -->
@@ -1392,13 +1394,13 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   // ─── Internal State ───
   sortColumn = '';
   sortDirection: SortDirection = null;
-  visibleColumns: Set<string> = new Set();
+  visibleColumns = new Set<string>();
   filterValues: Record<string, string> = {};
   columnWidths: Record<string, string> = {};
   columnChooserOpen = false;
   currentPage = 1;
-  selectedRows: Set<unknown> = new Set();
-  expandedRows: Set<unknown> = new Set();
+  selectedRows = new Set<unknown>();
+  expandedRows = new Set<unknown>();
   pageSizeOptions = [10, 25, 50, 100];
 
   // Resize state

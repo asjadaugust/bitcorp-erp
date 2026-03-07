@@ -108,7 +108,8 @@ export class InspeccionSsomaService {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
-    if (params?.tipo_inspeccion) httpParams = httpParams.set('tipo_inspeccion', params.tipo_inspeccion);
+    if (params?.tipo_inspeccion)
+      httpParams = httpParams.set('tipo_inspeccion', params.tipo_inspeccion);
     if (params?.nivel_riesgo) httpParams = httpParams.set('nivel_riesgo', params.nivel_riesgo);
     if (params?.estado) httpParams = httpParams.set('estado', params.estado);
     return this.http.get<PaginatedResponse<InspeccionSsomaLista>>(`${this.baseUrl}/inspecciones`, {

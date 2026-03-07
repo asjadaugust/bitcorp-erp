@@ -17,19 +17,32 @@ export class TimesheetService {
   private http = inject(HttpClient);
   private apiUrl = `${environment.apiUrl}/scheduling/timesheets`;
 
-  listTimesheetsPaginated(params?: { page?: number; limit?: number; trabajador_id?: number; proyecto_id?: string; estado?: string; periodo?: string }): Observable<PaginatedResponse<Timesheet>> {
+  listTimesheetsPaginated(params?: {
+    page?: number;
+    limit?: number;
+    trabajador_id?: number;
+    proyecto_id?: string;
+    estado?: string;
+    periodo?: string;
+  }): Observable<PaginatedResponse<Timesheet>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
-    if (params?.trabajador_id) httpParams = httpParams.set('trabajador_id', params.trabajador_id.toString());
+    if (params?.trabajador_id)
+      httpParams = httpParams.set('trabajador_id', params.trabajador_id.toString());
     if (params?.proyecto_id) httpParams = httpParams.set('proyecto_id', params.proyecto_id);
     if (params?.estado) httpParams = httpParams.set('estado', params.estado);
     if (params?.periodo) httpParams = httpParams.set('periodo', params.periodo);
     return this.http.get<Record<string, unknown>>(this.apiUrl, { params: httpParams }).pipe(
       map((response) => {
-        const data = ((response?.['data'] ?? response) as Timesheet[]);
-        const pagination = (response?.['pagination'] as PaginatedResponse<Timesheet>['pagination']) ?? {
-          page: 1, limit: params?.limit ?? 20, total: Array.isArray(data) ? data.length : 0, total_pages: 1,
+        const data = (response?.['data'] ?? response) as Timesheet[];
+        const pagination = (response?.[
+          'pagination'
+        ] as PaginatedResponse<Timesheet>['pagination']) ?? {
+          page: 1,
+          limit: params?.limit ?? 20,
+          total: Array.isArray(data) ? data.length : 0,
+          total_pages: 1,
         };
         return { data: Array.isArray(data) ? data : [], pagination };
       })
