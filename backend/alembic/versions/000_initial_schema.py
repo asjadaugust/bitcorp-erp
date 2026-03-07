@@ -30,6 +30,7 @@ _SCHEMAS = [
     "sig",
     "aprobaciones",
     "catalogo",
+    "presupuestos",
 ]
 
 
@@ -50,6 +51,7 @@ def upgrade() -> None:
     import app.modelos.equipo  # noqa: F401
     import app.modelos.licitacion  # noqa: F401
     import app.modelos.logistica  # noqa: F401
+    import app.modelos.presupuestos  # noqa: F401
     import app.modelos.proveedores  # noqa: F401
     import app.modelos.proyectos  # noqa: F401
     import app.modelos.publico  # noqa: F401
@@ -74,6 +76,7 @@ def downgrade() -> None:
     import app.modelos.equipo  # noqa: F401
     import app.modelos.licitacion  # noqa: F401
     import app.modelos.logistica  # noqa: F401
+    import app.modelos.presupuestos  # noqa: F401
     import app.modelos.proveedores  # noqa: F401
     import app.modelos.proyectos  # noqa: F401
     import app.modelos.publico  # noqa: F401
