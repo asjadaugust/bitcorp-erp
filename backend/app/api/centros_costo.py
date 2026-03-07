@@ -18,7 +18,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("/")
 async def listar_centros_costo(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -83,7 +83,7 @@ async def obtener_centro_costo(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_centro_costo(
     datos: CentroCostoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

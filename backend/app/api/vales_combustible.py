@@ -20,7 +20,7 @@ async def listar_por_equipo(
     return enviar_exito([v.model_dump() for v in vales])
 
 
-@router.get("")
+@router.get("/")
 async def listar_vales(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -34,7 +34,7 @@ async def listar_vales(
     return enviar_paginado([v.model_dump() for v in vales], pagina=page, limite=limit, total=total)
 
 
-@router.post("")
+@router.post("/")
 async def crear_vale(
     datos: ValeCombustibleCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

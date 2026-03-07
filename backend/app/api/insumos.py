@@ -16,7 +16,7 @@ from app.utils.respuesta import (
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def listar_insumos(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -54,7 +54,7 @@ async def obtener_insumo(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_insumo(
     datos: InsumoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

@@ -20,7 +20,7 @@ from app.utils.respuesta import (
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def listar_licitaciones(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -47,7 +47,7 @@ async def obtener_licitacion(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_licitacion(
     datos: LicitacionCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

@@ -15,11 +15,11 @@ part 'dio_client.g.dart';
 /// This makes localhost:3410 on the phone resolve to localhost:3410 on the Mac.
 /// Works for both emulators and physical devices connected via USB.
 String _resolveBaseUrl() {
-  // All platforms use localhost because:
-  // - Android emulator: add 10.0.2.2 alias is set up by the emulator
-  // - Android physical device: `adb reverse tcp:3410 tcp:3410` tunnels over USB
-  // - iOS simulator / macOS: localhost works natively
-  return 'http://localhost:3410/api';
+  const apiUrl = String.fromEnvironment(
+    'API_URL',
+    defaultValue: 'http://localhost:3410/api',
+  );
+  return apiUrl;
 }
 
 @Riverpod(keepAlive: true)

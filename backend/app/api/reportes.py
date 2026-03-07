@@ -97,7 +97,7 @@ async def resolver_observacion(
 # ─── List (paginated) ─────────────────────────────────────────────────────
 
 
-@router.get("")
+@router.get("/")
 async def listar_reportes(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -140,7 +140,7 @@ async def listar_reportes(
 # ─── Create ───────────────────────────────────────────────────────────────
 
 
-@router.post("")
+@router.post("/")
 async def crear_reporte(
     datos: ParteDiarioCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

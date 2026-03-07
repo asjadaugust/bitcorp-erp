@@ -12,7 +12,7 @@ from app.utils.respuesta import enviar_exito
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def obtener_config(_usuario: UsuarioActual, db: SesionDb) -> ORJSONResponse:
     """Obtener la configuración de combustible actual."""
     servicio = ServicioCombustible(db)

@@ -45,6 +45,8 @@ dependencies = [
     "httpx>=0.28.0",
     # Performance
     "orjson>=3.10.12",
+    # Production server
+    "gunicorn>=22.0.0",
 ]
 
 [project.optional-dependencies]

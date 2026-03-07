@@ -1,0 +1,18 @@
+[Unit]
+Description=BitCorp Deploy Webhook Listener
+After=network.target docker.service
+
+[Service]
+Type=simple
+User=%i
+WorkingDirectory=/home/%i/bitcorp-erp/deploy
+ExecStart=/usr/bin/python3 /home/%i/bitcorp-erp/deploy/webhook-listener.py
+EnvironmentFile=/home/%i/bitcorp-erp/deploy/.env.prod
+Restart=on-failure
+RestartSec=5
+StandardOutput=journal
+StandardError=journal
+SyslogIdentifier=bitcorp-webhook
+
+[Install]
+WantedBy=multi-user.target

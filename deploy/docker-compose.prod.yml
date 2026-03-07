@@ -1,11 +1,12 @@
 services:
   postgres:
-    image: postgres:15-alpine
+    image: postgres:16-alpine
     container_name: bitcorp-postgres-prod
     environment:
-      POSTGRES_USER: bitcorp
-      POSTGRES_PASSWORD: bitcorp_password
-      POSTGRES_DB: bitcorp_prod
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+      POSTGRES_INITDB_ARGS: "--encoding=UTF8"
     volumes:
       - postgres_data_prod:/var/lib/postgresql/data
     ports:
@@ -13,44 +14,79 @@ services:
     restart: always
     networks:
       - bitcorp-network
+    command:
+      - "postgres"
+      - "-c"
+      - "shared_buffers=256MB"
+      - "-c"
+      - "max_connections=200"
+    shm_size: 256mb
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   redis:
-    image: redis:alpine
+    image: redis:7-alpine
     container_name: bitcorp-redis-prod
     ports:
       - "3460:6379"
+    volumes:
+      - redis_data_prod:/data
     restart: always
     networks:
       - bitcorp-network
+    command: redis-server --appendonly yes
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
 
   backend:
     build:
-      context: ../backend
-      dockerfile: ../docker/backend.prod.Dockerfile
+      context: ..
+      dockerfile: docker/backend.prod.Dockerfile
     container_name: bitcorp-backend-prod
     environment:
       ENVIRONMENT: production
-      PORT: 3400
-      DATABASE_URL: postgresql+asyncpg://bitcorp:bitcorp_password@postgres:5432/bitcorp_prod
+      CORS_ORIGINS: "https://${DOMAIN:-bitcorp.mohammadasjad.com}"
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
+      PORT: "3400"
+      PYTHONPATH: /app
+      DATABASE_URL: postgresql+asyncpg://${POSTGRES_USER}:${POSTGRES_PASSWORD}@postgres:5432/${POSTGRES_DB}
       DB_HOST: postgres
-      DB_PORT: 5432
-      POSTGRES_USER: bitcorp
-      POSTGRES_PASSWORD: bitcorp_password
-      POSTGRES_DB: bitcorp_prod
+      DB_PORT: "5432"
       REDIS_URL: redis://redis:6379
       REDIS_HOST: redis
-      REDIS_PORT: 6379
-      JWT_SECRET: ${JWT_SECRET:-production_secret_key_change_me}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-production_refresh_secret_key_change_me}
-      CORS_ORIGINS: "https://${DOMAIN},http://localhost,http://localhost:3420"
+      REDIS_PORT: "6379"
     ports:
       - "3400:3400"
     depends_on:
-      - postgres
-      - redis
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: always
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   frontend:
     build:
@@ -64,6 +100,34 @@ services:
     restart: always
     networks:
       - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: bitcorp-pgadmin-prod
+    restart: unless-stopped
+    environment:
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL:-admin@bitcorp.local}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
+      PGADMIN_CONFIG_SERVER_MODE: "False"
+      SCRIPT_NAME: /pgadmin
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data_prod:/var/lib/pgadmin
+    networks:
+      - bitcorp-network
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
+    depends_on:
+      - postgres
 
   cloudflared:
     image: cloudflare/cloudflared:latest
@@ -84,3 +148,5 @@ networks:
 
 volumes:
   postgres_data_prod:
+  redis_data_prod:
+  pgadmin_data_prod:

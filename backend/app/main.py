@@ -66,7 +66,6 @@ app = FastAPI(
     redoc_url="/redoc",
     default_response_class=ORJSONResponse,
     lifespan=ciclo_vida,
-    redirect_slashes=False,
 )
 
 # --- Middleware (orden inverso de ejecución) ---

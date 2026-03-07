@@ -4,16 +4,16 @@ Columns: gps_latitude, gps_longitude, gps_accuracy, weather_conditions,
 combustible_cargado. Also ensures turno, lugar_llegada, responsable_frente
 exist (IF NOT EXISTS for safety).
 
-Revision ID: 020_parte_diario_missing_fields
-Revises: 019_provider_estado
+Revision ID: 022_parte_diario_missing_fields
+Revises: 021_seed_missing_data
 Create Date: 2026-03-06
 """
 
 import sqlalchemy as sa
 from alembic import op
 
-revision = "020_parte_diario_missing_fields"
-down_revision = "019_provider_estado"
+revision = "022_parte_diario_missing_fields"
+down_revision = "021_seed_missing_data"
 branch_labels = None
 depends_on = None
 
