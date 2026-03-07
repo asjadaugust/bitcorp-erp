@@ -25,7 +25,7 @@ async def listar_por_equipo(
     return enviar_exito([p.model_dump() for p in periodos])
 
 
-@router.get("")
+@router.get("/")
 async def listar_periodos(
     usuario: UsuarioActual, db: SesionDb,
     page: int = Query(1, ge=1), limit: int = Query(10, ge=1, le=100),
@@ -40,7 +40,7 @@ async def listar_periodos(
     )
 
 
-@router.post("")
+@router.post("/")
 async def crear_periodo(
     datos: InoperatividadCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

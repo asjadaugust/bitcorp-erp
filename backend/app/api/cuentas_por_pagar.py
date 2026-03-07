@@ -20,7 +20,7 @@ router = APIRouter(
 )
 
 
-@router.get("")
+@router.get("/")
 async def listar_cuentas(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -67,7 +67,7 @@ async def obtener_cuenta(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_cuenta(
     datos: CuentaPorPagarCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

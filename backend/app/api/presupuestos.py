@@ -23,7 +23,7 @@ router = APIRouter()
 
 # ── Presupuesto CRUD ─────────────────────────────────────────────────────────
 
-@router.get("")
+@router.get("/")
 async def listar_presupuestos(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -50,7 +50,7 @@ async def obtener_presupuesto(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_presupuesto(
     datos: PresupuestoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

@@ -18,7 +18,7 @@ router = APIRouter()
 
 # ── APU CRUD ──────────────────────────────────────────────────────────────────
 
-@router.get("")
+@router.get("/")
 async def listar_apus(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -55,7 +55,7 @@ async def obtener_apu(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_apu(
     datos: ApuCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

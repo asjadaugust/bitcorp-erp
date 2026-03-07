@@ -11,7 +11,7 @@ from app.utils.respuesta import enviar_creado, enviar_exito, enviar_paginado
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def listar_tareos(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -43,7 +43,7 @@ async def obtener_tareo(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_tareo(
     datos: TareoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:

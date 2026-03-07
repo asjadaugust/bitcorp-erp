@@ -16,7 +16,7 @@ from app.utils.respuesta import (
 router = APIRouter()
 
 
-@router.get("")
+@router.get("/")
 async def listar_empleados(
     usuario: UsuarioActual,
     db: SesionDb,
@@ -43,7 +43,7 @@ async def obtener_empleado(
     return enviar_exito(datos.model_dump())
 
 
-@router.post("")
+@router.post("/")
 async def crear_empleado(
     datos: EmpleadoCrear, usuario: UsuarioActual, db: SesionDb
 ) -> ORJSONResponse:
