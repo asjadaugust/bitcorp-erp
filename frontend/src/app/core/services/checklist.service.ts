@@ -91,26 +91,46 @@ export class ChecklistService {
   // TEMPLATE METHODS
   // ============================================
 
-  getAllTemplatesPaginated(params?: { page?: number; limit?: number; activo?: boolean; tipoEquipo?: string; search?: string }): Observable<{ data: ChecklistTemplate[]; pagination: { page: number; limit: number; total: number; total_pages: number } }> {
+  getAllTemplatesPaginated(params?: {
+    page?: number;
+    limit?: number;
+    activo?: boolean;
+    tipoEquipo?: string;
+    search?: string;
+  }): Observable<{
+    data: ChecklistTemplate[];
+    pagination: { page: number; limit: number; total: number; total_pages: number };
+  }> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
-    if (params?.activo !== undefined) httpParams = httpParams.set('activo', params.activo.toString());
+    if (params?.activo !== undefined)
+      httpParams = httpParams.set('activo', params.activo.toString());
     if (params?.tipoEquipo) httpParams = httpParams.set('tipoEquipo', params.tipoEquipo);
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/templates`, { params: httpParams }).pipe(
-      map((response) => {
-        const dataArray = response?.['data'] || response;
-        const data = Array.isArray(dataArray)
-          ? dataArray.map((item) => this.mapApiToChecklistTemplate(item as Record<string, unknown>))
-          : [];
-        const rawPagination = response?.['pagination'] as Record<string, unknown> | undefined;
-        const pagination = rawPagination
-          ? { page: rawPagination['page'] as number, limit: rawPagination['limit'] as number, total: rawPagination['total'] as number, total_pages: (rawPagination['total_pages'] || rawPagination['totalPages']) as number }
-          : { page: 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1 };
-        return { data, pagination };
-      })
-    );
+    return this.http
+      .get<Record<string, unknown>>(`${this.apiUrl}/templates`, { params: httpParams })
+      .pipe(
+        map((response) => {
+          const dataArray = response?.['data'] || response;
+          const data = Array.isArray(dataArray)
+            ? dataArray.map((item) =>
+                this.mapApiToChecklistTemplate(item as Record<string, unknown>)
+              )
+            : [];
+          const rawPagination = response?.['pagination'] as Record<string, unknown> | undefined;
+          const pagination = rawPagination
+            ? {
+                page: rawPagination['page'] as number,
+                limit: rawPagination['limit'] as number,
+                total: rawPagination['total'] as number,
+                total_pages: (rawPagination['total_pages'] ||
+                  rawPagination['totalPages']) as number,
+              }
+            : { page: 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1 };
+          return { data, pagination };
+        })
+      );
   }
 
   getAllTemplates(filters?: TemplateFilters): Observable<ChecklistTemplate[]> {

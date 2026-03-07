@@ -63,7 +63,15 @@ export class ProjectService {
     } as unknown as Project;
   }
 
-  getAllPaginated(params?: { page?: number; limit?: number; search?: string; estado?: string }): Observable<{ data: Project[]; pagination: { page: number; limit: number; total: number; total_pages: number } }> {
+  getAllPaginated(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+    estado?: string;
+  }): Observable<{
+    data: Project[];
+    pagination: { page: number; limit: number; total: number; total_pages: number };
+  }> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
@@ -73,8 +81,16 @@ export class ProjectService {
       map((response) => {
         const dataArray = response?.['data'] || response;
         const data = Array.isArray(dataArray) ? dataArray.map((p) => this.mapApiToProject(p)) : [];
-        const pagination = (response?.['pagination'] as { page: number; limit: number; total: number; total_pages: number }) ?? {
-          page: 1, limit: params?.limit ?? 20, total: data.length, total_pages: 1,
+        const pagination = (response?.['pagination'] as {
+          page: number;
+          limit: number;
+          total: number;
+          total_pages: number;
+        }) ?? {
+          page: 1,
+          limit: params?.limit ?? 20,
+          total: data.length,
+          total_pages: 1,
         };
         return { data, pagination };
       })

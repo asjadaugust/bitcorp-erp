@@ -25,10 +25,7 @@ import {
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { EdtPanelComponent } from '../../associations/edt-panel.component';
-import {
-  TURNO_OPTIONS,
-  WEATHER_OPTIONS,
-} from '../../../../core/constants/parte-diario.constants';
+import { TURNO_OPTIONS, WEATHER_OPTIONS } from '../../../../core/constants/parte-diario.constants';
 
 @Component({
   selector: 'app-equipment-daily-report-form',
@@ -59,8 +56,11 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   operators: Operator[] = [];
   equipmentOptions: DropdownOption[] = [];
   operatorOptions: DropdownOption[] = [];
-  turnoOptions: DropdownOption[] = TURNO_OPTIONS.map(o => ({ label: o.label, value: o.value }));
-  weatherOptions: DropdownOption[] = WEATHER_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  turnoOptions: DropdownOption[] = TURNO_OPTIONS.map((o) => ({ label: o.label, value: o.value }));
+  weatherOptions: DropdownOption[] = WEATHER_OPTIONS.map((o) => ({
+    label: o.label,
+    value: o.value,
+  }));
   edtOptions: DropdownOption[] = [];
 
   // Precalentamiento auto-fill
@@ -460,9 +460,10 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       lugar_llegada: f.lugar_llegada || null,
       responsable_frente: f.responsable_frente || null,
       estado: status,
-      produccionRows: f.productionRows?.filter((r: any) =>
-        r.edt_id || r.ubicacion_prog_ini || r.material_descripcion || r.metrado
-      ) || [],
+      produccionRows:
+        f.productionRows?.filter(
+          (r: any) => r.edt_id || r.ubicacion_prog_ini || r.material_descripcion || r.metrado
+        ) || [],
     };
   }
 

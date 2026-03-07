@@ -283,8 +283,12 @@ async def listar_observaciones(
             SELECT
                 COUNT(*) AS total,
                 COUNT(*) FILTER (WHERE citem.es_critico = TRUE) AS criticas,
-                COUNT(*) FILTER (WHERE cr.accion_requerida IN ('REPARAR','MANTENIMIENTO')) AS a_reparar,
-                COUNT(*) FILTER (WHERE cr.accion_requerida IN ('REEMPLAZAR','REEMPLAZO')) AS a_reemplazar
+                COUNT(*) FILTER (
+                    WHERE cr.accion_requerida IN ('REPARAR','MANTENIMIENTO')
+                ) AS a_reparar,
+                COUNT(*) FILTER (
+                    WHERE cr.accion_requerida IN ('REEMPLAZAR','REEMPLAZO')
+                ) AS a_reemplazar
             FROM equipo.checklist_resultado cr
             JOIN equipo.checklist_inspeccion ci ON cr.inspeccion_id = ci.id
             JOIN equipo.equipo e ON ci.equipo_id = e.id

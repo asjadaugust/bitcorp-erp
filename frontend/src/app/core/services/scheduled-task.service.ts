@@ -24,7 +24,13 @@ export class ScheduledTaskService {
     }
     return this.http
       .get<Record<string, unknown>>(this.apiUrl, { params })
-      .pipe(map((res) => ((res['data'] || res) as Record<string, unknown>[]).map((task: Record<string, unknown>) => this.mapToFrontend(task))));
+      .pipe(
+        map((res) =>
+          ((res['data'] || res) as Record<string, unknown>[]).map((task: Record<string, unknown>) =>
+            this.mapToFrontend(task)
+          )
+        )
+      );
   }
 
   getById(id: number): Observable<ScheduledTask> {

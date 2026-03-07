@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel
 
-
 # ─── Caja Chica ──────────────────────────────────────────────────────────
 
 

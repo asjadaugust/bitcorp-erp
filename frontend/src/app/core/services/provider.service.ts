@@ -99,7 +99,9 @@ export class ProviderService {
       map((response) => {
         const raw = (response?.['data'] as Record<string, unknown>[]) || [];
         const data = raw.map((p) => this.mapApiToProvider(p));
-        const pagination = (response?.['pagination'] as PaginatedResponse<Provider>['pagination']) || {
+        const pagination = (response?.[
+          'pagination'
+        ] as PaginatedResponse<Provider>['pagination']) || {
           page: 1,
           limit: params?.limit ?? 20,
           total: data.length,

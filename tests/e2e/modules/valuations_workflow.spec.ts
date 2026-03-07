@@ -13,10 +13,10 @@ test.describe('Valuations Workflow - Auto-Calculation (WS-1)', () => {
 
   test('should generate valuation for Feb 2026 and verify auto-calculation', async ({ page }) => {
     // Capture console logs
-    page.on('console', msg => console.log(`BROWSER-CONSOLE: ${msg.text()}`));
+    page.on('console', (msg) => console.log(`BROWSER-CONSOLE: ${msg.text()}`));
 
     // Listen for alert dialog and accept it
-    page.on('dialog', async dialog => {
+    page.on('dialog', async (dialog) => {
       console.log(`Dialog message: ${dialog.message()}`);
       await dialog.accept();
     });
@@ -34,10 +34,9 @@ test.describe('Valuations Workflow - Auto-Calculation (WS-1)', () => {
     await monthDropdown.click();
     await page.locator('.option-item:has-text("Febrero")').click();
     await page.locator('.modal-body label:has-text("Año")').click(); // Blur dropdown
-    
+
     await page.locator('.modal-body input[type="number"]').click();
     await page.locator('.modal-body input[type="number"]').fill('2026');
-
 
     // 4. Confirm Generation
     console.log('Step 4: Confirming generation...');
@@ -51,19 +50,22 @@ test.describe('Valuations Workflow - Auto-Calculation (WS-1)', () => {
     // 5. Verify the new valuation in the list
     // Wait for a bit for the backend to process and UI to reload
     await page.waitForTimeout(5000);
-    
+
     // 6. Verify row in list
     console.log('Step 6: Verifying row in list...');
     const searchInput = page.getByPlaceholder('Buscar por contrato, factura...');
     await searchInput.click();
     await searchInput.fill('CONT-2025-001');
     await searchInput.press('Enter');
-    
+
     // Wait for the specific row for Feb 2026 to appear
     // The list should now be filtered
     await page.waitForTimeout(2000); // Wait for filter to apply
-    const febRow = page.locator('tr').filter({ hasText: 'CONT-2025-001' }).filter({ hasText: '01/02/2026' });
-    if (!await febRow.isVisible()) {
+    const febRow = page
+      .locator('tr')
+      .filter({ hasText: 'CONT-2025-001' })
+      .filter({ hasText: '01/02/2026' });
+    if (!(await febRow.isVisible())) {
       // Try searching and pressing Enter again just in case
       await searchInput.click();
       await searchInput.press('Enter');

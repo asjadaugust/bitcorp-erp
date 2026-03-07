@@ -42,7 +42,7 @@ async def test_dashboard_stats_tipos() -> None:
     assert isinstance(d["total_equipos"], int)
     assert isinstance(d["contratos_activos"], int)
     assert isinstance(d["valorizaciones_pendientes"], int)
-    assert isinstance(d["pagos_pendientes"], (int, float))
+    assert isinstance(d["pagos_pendientes"], int | float)
     assert isinstance(d["reportes_hoy"], int)
 
 

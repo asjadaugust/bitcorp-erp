@@ -1276,7 +1276,7 @@ export class AeroTableComponent {
       return [];
     }
 
-    let sortedData = [...this.data];
+    const sortedData = [...this.data];
 
     // Apply client-side sorting
     if (this.sortColumn && this.sortDirection && !this.serverSide) {

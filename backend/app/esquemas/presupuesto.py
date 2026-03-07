@@ -2,7 +2,6 @@
 
 from pydantic import BaseModel, Field
 
-
 # ── Partida DTOs ──────────────────────────────────────────────────────────────
 
 class PartidaDto(BaseModel):

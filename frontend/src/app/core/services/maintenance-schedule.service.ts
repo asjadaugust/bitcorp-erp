@@ -37,14 +37,22 @@ export class MaintenanceScheduleService {
   getById(id: string | number): Observable<MaintenanceSchedule> {
     return this.http
       .get<Record<string, unknown>>(`${this.apiUrl}/${id}`)
-      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   create(schedule: Partial<MaintenanceSchedule>): Observable<MaintenanceSchedule> {
     const payload = this.toSnakeCase(schedule);
     return this.http
       .post<Record<string, unknown>>(this.apiUrl, payload)
-      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   update(
@@ -54,7 +62,11 @@ export class MaintenanceScheduleService {
     const payload = this.toSnakeCase(schedule);
     return this.http
       .put<Record<string, unknown>>(`${this.apiUrl}/${id}`, payload)
-      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   delete(id: string | number): Observable<{ success: boolean; message: string }> {
@@ -70,7 +82,11 @@ export class MaintenanceScheduleService {
       .post<Record<string, unknown>>(`${this.apiUrl}/${id}/complete`, {
         completionHours,
       })
-      .pipe(map((response) => this.toCamelCase((response['data'] as Record<string, unknown>) || response)));
+      .pipe(
+        map((response) =>
+          this.toCamelCase((response['data'] as Record<string, unknown>) || response)
+        )
+      );
   }
 
   private toSnakeCase(data: Partial<MaintenanceSchedule>): Record<string, unknown> {

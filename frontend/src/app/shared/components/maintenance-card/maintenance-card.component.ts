@@ -7,7 +7,14 @@ import { MaintenanceSchedule } from '../../../core/models/maintenance-schedule.m
   standalone: true,
   imports: [CommonModule],
   template: `
-    <div class="maintenance-card" [class.hoverable]="clickable" (click)="onCardClick()" (keydown.enter)="onCardClick()" tabindex="0" role="button">
+    <div
+      class="maintenance-card"
+      [class.hoverable]="clickable"
+      (click)="onCardClick()"
+      (keydown.enter)="onCardClick()"
+      tabindex="0"
+      role="button"
+    >
       <div class="card-header">
         <div class="status-row">
           <span [class]="getStatusClass(schedule.estado)">

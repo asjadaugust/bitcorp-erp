@@ -81,10 +81,7 @@ export class EstadoStateMachineService {
    * In edit mode: current estado + valid transitions
    * In create mode: all estados
    */
-  getAvailableEstados(
-    currentEstado?: EstadoLicitacion,
-    isEditMode = false
-  ): EstadoOption[] {
+  getAvailableEstados(currentEstado?: EstadoLicitacion, isEditMode = false): EstadoOption[] {
     // Create mode: show all estados
     if (!isEditMode || !currentEstado) {
       return Object.values(this.estadoOptions);

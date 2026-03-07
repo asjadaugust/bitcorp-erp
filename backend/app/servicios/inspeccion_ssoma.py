@@ -9,8 +9,8 @@ from app.config.logging import obtener_logger
 from app.core.excepciones import NoEncontradoError
 from app.esquemas.inspeccion_ssoma import (
     ActoCondicionInseguroDto,
-    InspeccionSsomaCrear,
     InspeccionSsomaActualizar,
+    InspeccionSsomaCrear,
     InspeccionSsomaDetalleDto,
     InspeccionSsomaListaDto,
     ReporteActoCondicionActualizar,

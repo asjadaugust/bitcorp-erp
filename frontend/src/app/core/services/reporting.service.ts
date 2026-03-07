@@ -27,7 +27,9 @@ export class ReportingService {
       });
     }
 
-    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/equipment-utilization`, { params });
+    return this.http.get<Record<string, unknown>>(`${this.apiUrl}/equipment-utilization`, {
+      params,
+    });
   }
 
   getMaintenanceHistory(

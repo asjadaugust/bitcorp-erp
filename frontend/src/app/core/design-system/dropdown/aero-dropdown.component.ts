@@ -49,6 +49,7 @@ export type DropdownState = 'default' | 'error';
         (click)="toggle()"
         role="combobox"
         [attr.aria-expanded]="isOpen"
+        aria-controls="aero-dropdown-listbox"
         tabindex="0"
         (keydown.enter)="toggle()"
         (keydown.space)="toggle(); $event.preventDefault()"
@@ -85,7 +86,7 @@ export type DropdownState = 'default' | 'error';
           />
         </div>
 
-        <div class="aero-dropdown__options" role="listbox">
+        <div class="aero-dropdown__options" role="listbox" id="aero-dropdown-listbox">
           <button
             *ngFor="let opt of filteredOptions; let i = index"
             type="button"
@@ -136,7 +137,6 @@ export type DropdownState = 'default' | 'error';
       .aero-dropdown__required {
         color: var(--accent-500);
       }
-
 
       /* Field */
       .aero-dropdown__field {
@@ -377,7 +377,7 @@ export class AeroDropdownComponent implements ControlValueAccessor {
   highlightedIndex = -1;
 
   private selectedValue: unknown = null;
-  private selectedValues: Set<unknown> = new Set();
+  private selectedValues = new Set<unknown>();
 
   onChange: (value: unknown) => void = () => {};
   onTouched: () => void = () => {};
@@ -424,7 +424,11 @@ export class AeroDropdownComponent implements ControlValueAccessor {
 
   toggle(): void {
     if (this.disabled) return;
-    this.isOpen ? this.close() : this.open();
+    if (this.isOpen) {
+      this.close();
+    } else {
+      this.open();
+    }
   }
 
   open(): void {

@@ -90,14 +90,21 @@ export class SolicitudMaterialService {
   }
 
   // Solicitudes Material
-  getSolicitudes(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<SolicitudMaterial>> {
+  getSolicitudes(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Observable<PaginatedResponse<SolicitudMaterial>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    return this.http.get<PaginatedResponse<SolicitudMaterial>>(`${this.baseUrl}/solicitudes-material`, {
-      params: httpParams,
-    });
+    return this.http.get<PaginatedResponse<SolicitudMaterial>>(
+      `${this.baseUrl}/solicitudes-material`,
+      {
+        params: httpParams,
+      }
+    );
   }
 
   getSolicitud(id: number): Observable<SolicitudMaterialDetalle> {
@@ -122,12 +129,18 @@ export class SolicitudMaterialService {
   }
 
   // Requerimientos
-  getRequerimientos(params?: { page?: number; limit?: number; search?: string }): Observable<PaginatedResponse<Requerimiento>> {
+  getRequerimientos(params?: {
+    page?: number;
+    limit?: number;
+    search?: string;
+  }): Observable<PaginatedResponse<Requerimiento>> {
     let httpParams = new HttpParams();
     if (params?.page) httpParams = httpParams.set('page', params.page.toString());
     if (params?.limit) httpParams = httpParams.set('limit', params.limit.toString());
     if (params?.search) httpParams = httpParams.set('search', params.search);
-    return this.http.get<PaginatedResponse<Requerimiento>>(`${this.baseUrl}/requerimientos`, { params: httpParams });
+    return this.http.get<PaginatedResponse<Requerimiento>>(`${this.baseUrl}/requerimientos`, {
+      params: httpParams,
+    });
   }
 
   getRequerimiento(id: number): Observable<RequerimientoDetalle> {
