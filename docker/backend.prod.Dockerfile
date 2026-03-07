@@ -44,5 +44,6 @@ CMD ["gunicorn", "app.main:app", \
      "-w", "4", \
      "-k", "uvicorn.workers.UvicornWorker", \
      "--bind", "0.0.0.0:3400", \
+     "--forwarded-allow-ips", "*", \
      "--access-logfile", "-", \
      "--error-logfile", "-"]

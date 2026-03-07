@@ -7,7 +7,7 @@ GitHub Release → CI (test + build APK) → Webhook → WSL2 deploy.sh
                                                       ↓
                                               pg_dump → git checkout tag → docker compose rebuild → alembic migrate → health check
                                                       ↓
-                                              Cloudflare Tunnel → bitcorp.app
+                                              Cloudflare Tunnel → bitcorp.mohammadasjad.com
 ```
 
 ## Branch Strategy
@@ -83,11 +83,12 @@ curl http://localhost:9000/deploy-webhook
 
 In the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com) → Networks → Tunnels → your tunnel → Public Hostnames, add:
 
-| Hostname      | Path              | Service                 |
-| ------------- | ----------------- | ----------------------- |
-| `bitcorp.app` | `/`               | `http://localhost:3420` |
-| `bitcorp.app` | `/api`            | `http://localhost:3400` |
-| `bitcorp.app` | `/deploy-webhook` | `http://localhost:9000` |
+| Hostname                    | Path              | Service                 |
+| --------------------------- | ----------------- | ----------------------- |
+| `bitcorp.mohammadasjad.com` | `/`               | `http://frontend:80`    |
+| `bitcorp.mohammadasjad.com` | `/api/*`          | `http://backend:3400`   |
+| `bitcorp.mohammadasjad.com` | `/deploy-webhook` | `http://webhook:9000`   |
+| `bitcorp.mohammadasjad.com` | `/pgadmin/*`      | `http://pgadmin:80`     |
 
 ### 5. Build and start production services
 
@@ -164,7 +165,7 @@ release.yml triggers:
         ↓
 Server: verify HMAC → git checkout tag → rebuild → alembic migrate → health check
         ↓
-Site live at https://bitcorp.app
+Site live at https://bitcorp.mohammadasjad.com
 ```
 
 ---
@@ -244,5 +245,5 @@ crontab -e
 - [ ] On WSL2: configure Cloudflare Tunnel routes in Zero Trust dashboard
 - [ ] On WSL2: `docker compose ... up -d` (first production start)
 - [ ] On WSL2: `alembic upgrade head` (first-time DB migrations)
-- [ ] Verify `https://bitcorp.app` loads correctly
+- [ ] Verify `https://bitcorp.mohammadasjad.com` loads correctly
 - [ ] Create a test GitHub Release and confirm the deploy webhook fires

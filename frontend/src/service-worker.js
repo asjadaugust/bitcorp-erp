@@ -2,10 +2,9 @@
 // Implements offline-first capability with IndexedDB caching and background sync
 
 // IMPORTANT: Increment version to force cache refresh
-const CACHE_VERSION = 'bitcorp-erp-v2.1.0-dev';
+const CACHE_VERSION = 'bitcorp-erp-v2.2.0';
 const STATIC_CACHE = `${CACHE_VERSION}-static`;
 const DYNAMIC_CACHE = `${CACHE_VERSION}-dynamic`;
-const API_CACHE = `${CACHE_VERSION}-api`;
 
 // Development mode: Disable caching
 const DEVELOPMENT_MODE =
@@ -26,22 +25,6 @@ const STATIC_ASSETS = [
   '/assets/icons/icon-384x384.png',
   '/assets/icons/icon-512x512.png',
 ];
-
-// API routes that can be cached
-const API_CACHE_ROUTES = [
-  '/api/equipment',
-  '/api/operators',
-  '/api/projects',
-  '/api/reports',
-  '/api/tipos-equipo',
-  '/api/precalentamiento-config',
-  '/api/vales-combustible',
-];
-
-// Check if a URL path matches any API_CACHE_ROUTES prefix
-function isCacheableApiRoute(pathname) {
-  return API_CACHE_ROUTES.some((route) => pathname.startsWith(route));
-}
 
 // Install event - cache static assets
 self.addEventListener('install', (event) => {
@@ -88,8 +71,7 @@ self.addEventListener('activate', (event) => {
               (cacheName) =>
                 cacheName.startsWith('bitcorp-erp-') &&
                 cacheName !== STATIC_CACHE &&
-                cacheName !== DYNAMIC_CACHE &&
-                cacheName !== API_CACHE
+                cacheName !== DYNAMIC_CACHE
             )
             .map((cacheName) => {
               console.log('[SW] Deleting old cache:', cacheName);
@@ -123,15 +105,14 @@ self.addEventListener('fetch', (event) => {
   }
 
   // Skip cross-origin requests
-  if (url.origin !== location.origin && !url.pathname.startsWith('/api')) {
+  if (url.origin !== location.origin) {
     return;
   }
 
-  // Handle API requests
+  // API requests: only intercept POST /api/reports for offline sync
   if (url.pathname.startsWith('/api')) {
-    // Only intercept routes that need offline/caching support
-    if (isCacheableApiRoute(url.pathname)) {
-      event.respondWith(handleApiRequest(request));
+    if (request.method === 'POST' && url.pathname === '/api/reports') {
+      event.respondWith(handleReportSubmission(request));
     }
     // All other API routes pass through to network unmodified
     return;
@@ -140,56 +121,6 @@ self.addEventListener('fetch', (event) => {
   // Handle static assets
   event.respondWith(handleStaticRequest(request));
 });
-
-// Network-first strategy for API requests
-async function handleApiRequest(request) {
-  const url = new URL(request.url);
-
-  // For daily report submissions, use background sync
-  if (request.method === 'POST' && url.pathname === '/api/reports') {
-    return handleReportSubmission(request);
-  }
-
-  // For GET requests, try network first, fallback to cache
-  if (request.method === 'GET') {
-    try {
-      // Force network request by bypassing browser cache
-      const response = await fetch(new Request(request, { cache: 'no-store' }));
-
-      // Cache successful responses
-      if (response.ok) {
-        const cache = await caches.open(API_CACHE);
-        cache.put(request, response.clone());
-      }
-
-      return response;
-    } catch (error) {
-      console.log('[SW] Network request failed, checking cache:', error);
-      const cachedResponse = await caches.match(request);
-
-      if (cachedResponse) {
-        console.log('[SW] Returning cached response');
-        return cachedResponse;
-      }
-
-      // Return offline response
-      return new Response(
-        JSON.stringify({
-          success: false,
-          offline: true,
-          message: 'You are offline. Data will sync when connection is restored.',
-        }),
-        {
-          status: 503,
-          headers: { 'Content-Type': 'application/json' },
-        }
-      );
-    }
-  }
-
-  // For other methods, just try network
-  return fetch(request);
-}
 
 // Cache-first strategy for static assets (except index.html)
 async function handleStaticRequest(request) {
