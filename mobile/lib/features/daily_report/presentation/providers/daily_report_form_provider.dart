@@ -26,8 +26,25 @@ class DailyReportForm extends _$DailyReportForm {
       activityDescription: '',
       observations: null,
       signaturePath: null,
-      syncStatus: 'DRAFT',
+      syncStatus: 'BORRADOR',
       idValeCombustible: null,
+      turno: 'DIA',
+      horaInicio: null,
+      horaFin: null,
+      lugarSalida: null,
+      lugarLlegada: null,
+      combustibleInicial: null,
+      combustibleCargado: null,
+      numValeCombustible: null,
+      weatherConditions: null,
+      horasPrecalentamiento: null,
+      responsableFrente: null,
+      gpsLatitude: null,
+      gpsLongitude: null,
+      firmaOperador: null,
+      firmaSupervisor: null,
+      firmaJefeEquipos: null,
+      proyectoId: null,
       events: [],
       photos: [],
     );
@@ -93,9 +110,45 @@ class DailyReportForm extends _$DailyReportForm {
     state = state.copyWith(signaturePath: path);
   }
 
+  void updateTurno(String turno) {
+    state = state.copyWith(turno: turno);
+  }
+
+  void updateHoraInicio(String horaInicio) {
+    state = state.copyWith(horaInicio: horaInicio);
+  }
+
+  void updateHoraFin(String horaFin) {
+    state = state.copyWith(horaFin: horaFin);
+  }
+
+  void updateLugarSalida(String lugarSalida) {
+    state = state.copyWith(lugarSalida: lugarSalida);
+  }
+
+  void updateLugarLlegada(String lugarLlegada) {
+    state = state.copyWith(lugarLlegada: lugarLlegada);
+  }
+
+  void updateCombustibleInicial(double? value) {
+    state = state.copyWith(combustibleInicial: value);
+  }
+
+  void updateCombustibleCargado(double? value) {
+    state = state.copyWith(combustibleCargado: value);
+  }
+
+  void updateWeatherConditions(String? value) {
+    state = state.copyWith(weatherConditions: value);
+  }
+
+  void updateResponsableFrente(String? value) {
+    state = state.copyWith(responsableFrente: value);
+  }
+
   Future<void> saveReport() async {
     // Change state to PENDING_SYNC before saving
-    final reportToSave = state.copyWith(syncStatus: 'PENDING_SYNC');
+    final reportToSave = state.copyWith(syncStatus: 'PENDIENTE_SYNC');
 
     // Attempt saving to repository offline
     final repo = ref.read(dailyReportRepositoryProvider);

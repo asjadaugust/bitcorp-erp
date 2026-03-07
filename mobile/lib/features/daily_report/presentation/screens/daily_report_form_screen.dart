@@ -37,6 +37,16 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
   final _endOdoController = TextEditingController();
   final _descController = TextEditingController();
   final _obsController = TextEditingController();
+  final _horaInicioController = TextEditingController();
+  final _horaFinController = TextEditingController();
+  final _lugarSalidaController = TextEditingController();
+  final _lugarLlegadaController = TextEditingController();
+  final _combustibleInicialController = TextEditingController();
+  final _combustibleCargadoController = TextEditingController();
+  final _responsableFrenteController = TextEditingController();
+
+  String _selectedTurno = 'DIA';
+  String? _selectedWeather;
 
   final SignatureController _signatureController = SignatureController(
     penStrokeWidth: 3,
@@ -52,6 +62,13 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
     _endOdoController.dispose();
     _descController.dispose();
     _obsController.dispose();
+    _horaInicioController.dispose();
+    _horaFinController.dispose();
+    _lugarSalidaController.dispose();
+    _lugarLlegadaController.dispose();
+    _combustibleInicialController.dispose();
+    _combustibleCargadoController.dispose();
+    _responsableFrenteController.dispose();
     _signatureController.dispose();
     super.dispose();
   }
@@ -120,15 +137,21 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
           children: [
             _buildGeneralDetailsCard(draft),
             const SizedBox(height: AeroTheme.spacing16),
+            _buildTurnoAndScheduleCard(draft),
+            const SizedBox(height: AeroTheme.spacing16),
             _buildHourMeterCard(draft),
             const SizedBox(height: AeroTheme.spacing16),
             _buildOdometerCard(),
+            const SizedBox(height: AeroTheme.spacing16),
+            _buildCombustibleCard(),
             const SizedBox(height: AeroTheme.spacing16),
             _buildActivityLogCard(),
             const SizedBox(height: AeroTheme.spacing16),
             _buildEventsLogCard(draft),
             const SizedBox(height: AeroTheme.spacing16),
             _buildPhotosCard(draft),
+            const SizedBox(height: AeroTheme.spacing16),
+            _buildCierreCard(),
             const SizedBox(height: AeroTheme.spacing16),
             _buildSignatureCard(),
           ],
@@ -156,14 +179,21 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       .updateSignature(newPath);
                 }
 
-                // Save logic
-                ref
-                    .read(dailyReportFormProvider.notifier)
-                    .updateDescription(_descController.text);
-                ref
-                    .read(dailyReportFormProvider.notifier)
-                    .updateObservations(_obsController.text);
-                await ref.read(dailyReportFormProvider.notifier).saveReport();
+                // Sync all text controllers to state before saving
+                final notifier = ref.read(dailyReportFormProvider.notifier);
+                notifier.updateDescription(_descController.text);
+                notifier.updateObservations(_obsController.text);
+                if (_lugarSalidaController.text.isNotEmpty) {
+                  notifier.updateLugarSalida(_lugarSalidaController.text);
+                }
+                if (_lugarLlegadaController.text.isNotEmpty) {
+                  notifier.updateLugarLlegada(_lugarLlegadaController.text);
+                }
+                if (_responsableFrenteController.text.isNotEmpty) {
+                  notifier.updateResponsableFrente(
+                      _responsableFrenteController.text);
+                }
+                await notifier.saveReport();
 
                 if (context.mounted) {
                   HapticFeedback.mediumImpact();
@@ -188,6 +218,282 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
             },
             child: const Text('Guardar y Continuar'),
           ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTurnoAndScheduleCard(DailyReportModel draft) {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AeroTheme.spacing24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '1b. Turno y Horario',
+              style: TextStyle(
+                fontFamily: AeroTheme.headingFont,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AeroTheme.primary900,
+              ),
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: 'Turno',
+              ),
+              value: _selectedTurno,
+              items: const [
+                DropdownMenuItem(value: 'DIA', child: Text('Dia')),
+                DropdownMenuItem(value: 'NOCHE', child: Text('Noche')),
+              ],
+              onChanged: (val) {
+                if (val != null) {
+                  setState(() => _selectedTurno = val);
+                  ref.read(dailyReportFormProvider.notifier).updateTurno(val);
+                }
+              },
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            Row(
+              children: [
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: AeroTheme.primary500,
+                                onPrimary: Colors.white,
+                                onSurface: AeroTheme.primary900,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (time != null) {
+                        final formatted =
+                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                        _horaInicioController.text = formatted;
+                        ref
+                            .read(dailyReportFormProvider.notifier)
+                            .updateHoraInicio(formatted);
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: _horaInicioController,
+                        decoration: const InputDecoration(
+                          labelText: 'Hora Inicio',
+                          suffixIcon: Icon(Icons.access_time,
+                              color: AeroTheme.grey500),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: AeroTheme.spacing16),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () async {
+                      final time = await showTimePicker(
+                        context: context,
+                        initialTime: TimeOfDay.now(),
+                        builder: (context, child) {
+                          return Theme(
+                            data: Theme.of(context).copyWith(
+                              colorScheme: const ColorScheme.light(
+                                primary: AeroTheme.primary500,
+                                onPrimary: Colors.white,
+                                onSurface: AeroTheme.primary900,
+                              ),
+                            ),
+                            child: child!,
+                          );
+                        },
+                      );
+                      if (time != null) {
+                        final formatted =
+                            '${time.hour.toString().padLeft(2, '0')}:${time.minute.toString().padLeft(2, '0')}';
+                        _horaFinController.text = formatted;
+                        ref
+                            .read(dailyReportFormProvider.notifier)
+                            .updateHoraFin(formatted);
+                      }
+                    },
+                    child: AbsorbPointer(
+                      child: TextFormField(
+                        controller: _horaFinController,
+                        decoration: const InputDecoration(
+                          labelText: 'Hora Fin',
+                          suffixIcon: Icon(Icons.access_time,
+                              color: AeroTheme.grey500),
+                        ),
+                      ),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            TextFormField(
+              controller: _lugarSalidaController,
+              decoration: const InputDecoration(
+                labelText: 'Lugar de Salida',
+                hintText: 'Ubicacion de inicio de jornada...',
+              ),
+              onChanged: (val) => ref
+                  .read(dailyReportFormProvider.notifier)
+                  .updateLugarSalida(val),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCombustibleCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AeroTheme.spacing24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '3b. Combustible',
+              style: TextStyle(
+                fontFamily: AeroTheme.headingFont,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AeroTheme.primary900,
+              ),
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            Row(
+              children: [
+                Expanded(
+                  child: TextFormField(
+                    controller: _combustibleInicialController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Inicial (L)',
+                      hintText: '0.0',
+                    ),
+                    onChanged: (val) {
+                      final value = double.tryParse(val);
+                      ref
+                          .read(dailyReportFormProvider.notifier)
+                          .updateCombustibleInicial(value);
+                    },
+                  ),
+                ),
+                const SizedBox(width: AeroTheme.spacing16),
+                Expanded(
+                  child: TextFormField(
+                    controller: _combustibleCargadoController,
+                    keyboardType: const TextInputType.numberWithOptions(
+                      decimal: true,
+                    ),
+                    decoration: const InputDecoration(
+                      labelText: 'Cargado (L)',
+                      hintText: '0.0',
+                    ),
+                    onChanged: (val) {
+                      final value = double.tryParse(val);
+                      ref
+                          .read(dailyReportFormProvider.notifier)
+                          .updateCombustibleCargado(value);
+                    },
+                  ),
+                ),
+              ],
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCierreCard() {
+    return Card(
+      elevation: 2,
+      shape: RoundedRectangleBorder(
+        borderRadius: BorderRadius.circular(AeroTheme.radiusMd),
+      ),
+      child: Padding(
+        padding: const EdgeInsets.all(AeroTheme.spacing24),
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              '6b. Cierre de Jornada',
+              style: TextStyle(
+                fontFamily: AeroTheme.headingFont,
+                fontSize: 18,
+                fontWeight: FontWeight.bold,
+                color: AeroTheme.primary900,
+              ),
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            TextFormField(
+              controller: _lugarLlegadaController,
+              decoration: const InputDecoration(
+                labelText: 'Lugar de Llegada',
+                hintText: 'Ubicacion de fin de jornada...',
+              ),
+              onChanged: (val) => ref
+                  .read(dailyReportFormProvider.notifier)
+                  .updateLugarLlegada(val),
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            DropdownButtonFormField<String>(
+              decoration: const InputDecoration(
+                labelText: 'Condiciones Climaticas',
+              ),
+              value: _selectedWeather,
+              items: const [
+                DropdownMenuItem(value: 'SOLEADO', child: Text('Soleado')),
+                DropdownMenuItem(value: 'NUBLADO', child: Text('Nublado')),
+                DropdownMenuItem(value: 'LLUVIA', child: Text('Lluvia')),
+                DropdownMenuItem(value: 'TORMENTA', child: Text('Tormenta')),
+                DropdownMenuItem(value: 'NIEBLA', child: Text('Niebla')),
+              ],
+              onChanged: (val) {
+                setState(() => _selectedWeather = val);
+                ref
+                    .read(dailyReportFormProvider.notifier)
+                    .updateWeatherConditions(val);
+              },
+            ),
+            const SizedBox(height: AeroTheme.spacing24),
+            TextFormField(
+              controller: _responsableFrenteController,
+              decoration: const InputDecoration(
+                labelText: 'Responsable de Frente',
+                hintText: 'Nombre del responsable...',
+              ),
+              onChanged: (val) => ref
+                  .read(dailyReportFormProvider.notifier)
+                  .updateResponsableFrente(val),
+            ),
+          ],
         ),
       ),
     );
@@ -536,7 +842,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
               child: AbsorbPointer(
                 child: TextFormField(
                   decoration: const InputDecoration(
-                    labelText: 'Fecha del Reporte',
+                    labelText: 'Fecha',
                     suffixIcon: Icon(
                       Icons.calendar_today,
                       color: AeroTheme.grey500,
@@ -551,7 +857,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
             equipmentAsync.when(
               data: (equipment) => DropdownButtonFormField<String>(
                 decoration: const InputDecoration(
-                  labelText: 'Equipo Seleccionado',
+                  labelText: 'Equipo',
                 ),
                 items: equipment.map((e) {
                   return DropdownMenuItem(
@@ -633,7 +939,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       decimal: true,
                     ),
                     decoration: const InputDecoration(
-                      labelText: 'H. Inicial (*)',
+                      labelText: 'Horometro Inicial (*)',
                       hintText: '0.0',
                     ),
                     onChanged: (_) => _calculateEffectiveHours(),
@@ -652,7 +958,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       decimal: true,
                     ),
                     decoration: const InputDecoration(
-                      labelText: 'H. Final (*)',
+                      labelText: 'Horometro Final (*)',
                       hintText: '0.0',
                     ),
                     onChanged: (_) => _calculateEffectiveHours(),
@@ -662,7 +968,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       final start = double.tryParse(_startHourController.text);
                       if (end == null) return 'Inválido';
                       if (start != null && end < start) {
-                        return 'H. Final < H. Inicial';
+                        return 'Hor. Final < Hor. Inicial';
                       }
                       return null;
                     },
@@ -681,7 +987,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
                   const Text(
-                    'Horas Efectivas:',
+                    'Horas Trabajadas:',
                     style: TextStyle(
                       fontWeight: FontWeight.bold,
                       color: AeroTheme.primary900,
@@ -734,7 +1040,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       decimal: true,
                     ),
                     decoration: const InputDecoration(
-                      labelText: 'K. Inicial',
+                      labelText: 'Odometro Inicial (km)',
                       hintText: '0.0',
                     ),
                     onChanged: (_) => _updateOdometers(),
@@ -748,7 +1054,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                       decimal: true,
                     ),
                     decoration: const InputDecoration(
-                      labelText: 'K. Final',
+                      labelText: 'Odometro Final (km)',
                       hintText: '0.0',
                     ),
                     onChanged: (_) => _updateOdometers(),
@@ -757,7 +1063,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
                         final end = double.tryParse(v);
                         final start = double.tryParse(_startOdoController.text);
                         if (start != null && end != null && end < start) {
-                          return 'K. Final < K. Inicial';
+                          return 'Odo. Final < Odo. Inicial';
                         }
                       }
                       return null;
@@ -797,7 +1103,7 @@ class _DailyReportFormScreenState extends ConsumerState<DailyReportFormScreen> {
               controller: _descController,
               maxLines: 3,
               decoration: const InputDecoration(
-                labelText: 'Descripción de los Trabajos',
+                labelText: 'Actividades Realizadas',
                 hintText: 'Detallar las actividades realizadas en el turno...',
                 alignLabelWithHint: true,
               ),

@@ -49,6 +49,23 @@ class DailyReportLocalSource {
         'signaturePath': map['signature_path'],
         'syncStatus': map['sync_status'],
         'idValeCombustible': map['id_vale_combustible'],
+        'proyectoId': map['proyecto_id'],
+        'turno': map['turno'],
+        'horaInicio': map['hora_inicio'],
+        'horaFin': map['hora_fin'],
+        'lugarSalida': map['lugar_salida'],
+        'lugarLlegada': map['lugar_llegada'],
+        'combustibleInicial': map['combustible_inicial'],
+        'combustibleCargado': map['combustible_cargado'],
+        'numValeCombustible': map['num_vale_combustible'],
+        'weatherConditions': map['weather_conditions'],
+        'horasPrecalentamiento': map['horas_precalentamiento'],
+        'responsableFrente': map['responsable_frente'],
+        'gpsLatitude': map['gps_latitude'],
+        'gpsLongitude': map['gps_longitude'],
+        'firmaOperador': map['firma_operador'],
+        'firmaSupervisor': map['firma_supervisor'],
+        'firmaJefeEquipos': map['firma_jefe_equipos'],
       };
 
       jsonMap['events'] = eventMaps
@@ -78,8 +95,8 @@ class DailyReportLocalSource {
     final db = await _localDatabase.database;
     final List<Map<String, dynamic>> reportMaps = await db.query(
       'daily_reports',
-      where: 'sync_status = ?',
-      whereArgs: ['PENDING_SYNC'],
+      where: 'sync_status = ? OR sync_status = ?',
+      whereArgs: ['PENDIENTE_SYNC', 'PENDING_SYNC'],
       orderBy: 'date DESC',
     );
 
@@ -111,6 +128,23 @@ class DailyReportLocalSource {
         'signaturePath': map['signature_path'],
         'syncStatus': map['sync_status'],
         'idValeCombustible': map['id_vale_combustible'],
+        'proyectoId': map['proyecto_id'],
+        'turno': map['turno'],
+        'horaInicio': map['hora_inicio'],
+        'horaFin': map['hora_fin'],
+        'lugarSalida': map['lugar_salida'],
+        'lugarLlegada': map['lugar_llegada'],
+        'combustibleInicial': map['combustible_inicial'],
+        'combustibleCargado': map['combustible_cargado'],
+        'numValeCombustible': map['num_vale_combustible'],
+        'weatherConditions': map['weather_conditions'],
+        'horasPrecalentamiento': map['horas_precalentamiento'],
+        'responsableFrente': map['responsable_frente'],
+        'gpsLatitude': map['gps_latitude'],
+        'gpsLongitude': map['gps_longitude'],
+        'firmaOperador': map['firma_operador'],
+        'firmaSupervisor': map['firma_supervisor'],
+        'firmaJefeEquipos': map['firma_jefe_equipos'],
       };
       jsonMap['events'] = eventMaps
           .map((e) => {
@@ -157,6 +191,23 @@ class DailyReportLocalSource {
         'signature_path': report.signaturePath,
         'sync_status': report.syncStatus,
         'id_vale_combustible': report.idValeCombustible,
+        'proyecto_id': report.proyectoId,
+        'turno': report.turno,
+        'hora_inicio': report.horaInicio,
+        'hora_fin': report.horaFin,
+        'lugar_salida': report.lugarSalida,
+        'lugar_llegada': report.lugarLlegada,
+        'combustible_inicial': report.combustibleInicial,
+        'combustible_cargado': report.combustibleCargado,
+        'num_vale_combustible': report.numValeCombustible,
+        'weather_conditions': report.weatherConditions,
+        'horas_precalentamiento': report.horasPrecalentamiento,
+        'responsable_frente': report.responsableFrente,
+        'gps_latitude': report.gpsLatitude,
+        'gps_longitude': report.gpsLongitude,
+        'firma_operador': report.firmaOperador,
+        'firma_supervisor': report.firmaSupervisor,
+        'firma_jefe_equipos': report.firmaJefeEquipos,
       }, conflictAlgorithm: ConflictAlgorithm.replace);
 
       // Clear existing events/photos for update

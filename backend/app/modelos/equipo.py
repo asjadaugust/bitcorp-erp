@@ -617,6 +617,13 @@ class ParteDiario(Base):
     firma_residente: Mapped[str | None] = mapped_column(Text, nullable=True)
     firma_planeamiento_control: Mapped[str | None] = mapped_column(Text, nullable=True)
     solicitud_aprobacion_id: Mapped[int | None] = mapped_column(Integer, nullable=True)
+    gps_latitude: Mapped[float | None] = mapped_column(Numeric(12, 8), nullable=True)
+    gps_longitude: Mapped[float | None] = mapped_column(Numeric(12, 8), nullable=True)
+    gps_accuracy: Mapped[float | None] = mapped_column(Numeric(6, 1), nullable=True)
+    weather_conditions: Mapped[str | None] = mapped_column(String(50), nullable=True)
+    combustible_cargado: Mapped[float | None] = mapped_column(
+        Numeric(10, 2), nullable=True
+    )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), server_default=func.now(), nullable=False
     )

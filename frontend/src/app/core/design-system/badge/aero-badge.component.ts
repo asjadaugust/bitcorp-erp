@@ -17,41 +17,53 @@ export type BadgeVariant = 'success' | 'warning' | 'error' | 'info' | 'neutral' 
       .aero-badge {
         display: inline-flex;
         align-items: center;
-        padding: 2px 10px;
+        gap: 4px;
+        padding: 0 8px;
         border-radius: 9999px;
-        font-size: var(--type-label-size);
+        font-size: 14px;
         font-weight: 500;
-        line-height: 1.5;
+        line-height: 22px;
         white-space: nowrap;
+        border: 1px solid transparent;
+
+        i {
+          color: inherit;
+        }
 
         &.aero-badge--success {
-          background-color: var(--semantic-blue-100);
-          color: var(--primary-900);
+          background-color: var(--semantic-green-100);
+          border-color: var(--semantic-green-300);
+          color: var(--semantic-green-500);
         }
 
         &.aero-badge--warning {
-          background-color: var(--grey-100);
-          color: var(--grey-900);
+          background-color: var(--semantic-yellow-100);
+          border-color: var(--semantic-yellow-300);
+          color: var(--semantic-yellow-900);
         }
 
         &.aero-badge--error {
-          background-color: var(--grey-100);
-          color: var(--grey-900);
+          background-color: var(--semantic-red-100);
+          border-color: var(--semantic-red-300);
+          color: var(--semantic-red-900);
         }
 
         &.aero-badge--info {
           background-color: var(--semantic-blue-100);
+          border-color: var(--semantic-blue-300);
           color: var(--primary-900);
         }
 
         &.aero-badge--neutral {
-          background-color: var(--grey-200);
-          color: var(--grey-900);
+          background-color: var(--grey-100);
+          border-color: var(--grey-300);
+          color: var(--primary-900);
         }
 
         &.aero-badge--primary {
-          background-color: var(--primary-100);
-          color: var(--primary-900);
+          background-color: var(--semantic-yellow-100);
+          border-color: var(--semantic-yellow-300);
+          color: var(--semantic-yellow-900);
         }
       }
     `,

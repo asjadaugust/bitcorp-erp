@@ -1,6 +1,6 @@
 import { Component, OnInit, OnDestroy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormBuilder, FormGroup, Validators, ReactiveFormsModule } from '@angular/forms';
+import { FormBuilder, FormGroup, FormArray, Validators, ReactiveFormsModule } from '@angular/forms';
 import { Router, ActivatedRoute } from '@angular/router';
 import { forkJoin, Subject, takeUntil } from 'rxjs';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
@@ -11,39 +11,24 @@ import { EquipmentService } from '../../../../core/services/equipment.service';
 import { OperatorService } from '../../../../core/services/operator.service';
 import { DailyReportService } from '../../../../core/services/daily-report.service';
 import { AuthService } from '../../../../core/services/auth.service';
+import { EdtService } from '../../../../core/services/edt.service';
 import { PrecalentamientoConfigService } from '../../../../core/services/precalentamiento-config.service';
 import { ConfirmService } from '../../../../core/services/confirm.service';
 import { SyncManager } from '../../../../core/services/sync-manager.service';
 import { ServiceWorkerService } from '../../../../core/services/service-worker.service';
 import {
-  DropdownComponent,
+  AeroButtonComponent,
+  AeroInputComponent,
+  AeroDropdownComponent,
   DropdownOption,
-} from '../../../../shared/components/dropdown/dropdown.component';
+} from '../../../../core/design-system';
+import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { EdtPanelComponent } from '../../associations/edt-panel.component';
-
-export interface DailyReportFormData {
-  fecha_parte: string;
-  trabajador_id: number;
-  equipo_id: number;
-  proyecto_id?: string;
-  hora_inicio: string;
-  hora_fin: string;
-  horometro_inicial: number;
-  horometro_final: number;
-  odometro_inicial?: number;
-  odometro_final?: number;
-  fuel_start?: number;
-  fuel_end?: number;
-  numero_vale_combustible?: string;
-  location: string;
-  work_description: string;
-  notes?: string;
-  weather_conditions?: string;
-  photos?: File[];
-  gps_latitude?: number;
-  gps_longitude?: number;
-  status: 'BORRADOR' | 'PENDIENTE';
-}
+import {
+  TURNO_OPTIONS,
+  WEATHER_OPTIONS,
+} from '../../../../core/constants/parte-diario.constants';
 
 @Component({
   selector: 'app-equipment-daily-report-form',
@@ -52,7 +37,11 @@ export interface DailyReportFormData {
     CommonModule,
     ReactiveFormsModule,
     MatSnackBarModule,
-    DropdownComponent,
+    AeroButtonComponent,
+    AeroInputComponent,
+    AeroDropdownComponent,
+    FormContainerComponent,
+    FormSectionComponent,
     EdtPanelComponent,
   ],
   templateUrl: './daily-report-form.component.html',
@@ -68,22 +57,15 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   equipment: Equipment[] = [];
   operators: Operator[] = [];
-  filteredEquipment: Equipment[] = [];
   equipmentOptions: DropdownOption[] = [];
   operatorOptions: DropdownOption[] = [];
+  turnoOptions: DropdownOption[] = TURNO_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  weatherOptions: DropdownOption[] = WEATHER_OPTIONS.map(o => ({ label: o.label, value: o.value }));
+  edtOptions: DropdownOption[] = [];
 
   // Precalentamiento auto-fill
-  showPrecalentamiento = false;
   precalentamientoOverride = false;
   precalentamientoTipoNombre = '';
-  horasPrecalentamientoSugeridas = 0;
-  weatherOptions: DropdownOption[] = [
-    { label: '☀️ Soleado', value: 'soleado' },
-    { label: '⛅ Parcialmente Nublado', value: 'parcialmente_nublado' },
-    { label: '☁️ Nublado', value: 'nublado' },
-    { label: '🌧️ Lluvioso', value: 'lluvioso' },
-    { label: '⛈️ Tormenta', value: 'tormenta' },
-  ];
 
   uploadedPhotos: File[] = [];
   maxPhotos = 5;
@@ -101,18 +83,18 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   private snackBar = inject(MatSnackBar);
   private confirmSvc = inject(ConfirmService);
   private syncManager = inject(SyncManager);
+  private edtService = inject(EdtService);
   private swService = inject(ServiceWorkerService);
 
   ngOnInit(): void {
     this.initForm();
     this.loadData();
+    this.loadEdtOptions();
     this.checkOnlineStatus();
     this.setupFormListeners();
 
-    // Check if editing existing report
     this.route.paramMap.pipe(takeUntil(this.destroy$)).subscribe((params) => {
       const id = params.get('id');
-      console.log('DailyReportFormComponent - Route Param ID:', id);
       if (id) {
         this.reportId = id;
         this.loadReport(this.reportId);
@@ -131,32 +113,76 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     const today = new Date().toISOString().split('T')[0];
 
     this.reportForm = this.fb.group({
-      fecha_parte: [today, Validators.required],
+      // Screen A: Información General
+      fecha: [today, Validators.required],
       trabajador_id: ['', Validators.required],
       equipo_id: ['', Validators.required],
       proyecto_id: [''],
+      turno: [''],
       hora_inicio: ['', Validators.required],
       hora_fin: ['', Validators.required],
-      horometro_inicial: ['', [Validators.required, Validators.min(0)]],
-      horometro_final: ['', [Validators.required, Validators.min(0)]],
-      odometro_inicial: ['', Validators.min(0)],
-      odometro_final: ['', Validators.min(0)],
-      fuel_start: ['', Validators.min(0)],
-      fuel_end: ['', Validators.min(0)],
-      fuel_consumed: [{ value: '', disabled: true }],
-      numero_vale_combustible: [''],
-      location: ['', Validators.required],
-      work_description: ['', [Validators.required, Validators.maxLength(500)]],
-      notes: ['', Validators.maxLength(1000)],
-      weather_conditions: [''],
+      lugar_salida: ['', Validators.required],
       gps_latitude: [''],
       gps_longitude: [''],
+
+      // Screen B: Actividades
+      horometro_inicial: ['', [Validators.required, Validators.min(0)]],
+      horometro_final: ['', [Validators.required, Validators.min(0)]],
       horas_precalentamiento: [0, [Validators.min(0)]],
+      odometro_inicial: ['', Validators.min(0)],
+      odometro_final: ['', Validators.min(0)],
+      observaciones: ['', [Validators.required, Validators.maxLength(500)]],
+      observaciones_correcciones: ['', Validators.maxLength(1000)],
+
+      // Screen C: Cierre
+      combustible_inicial: ['', Validators.min(0)],
+      combustible_cargado: ['', Validators.min(0)],
+      num_vale_combustible: [''],
+      weather_conditions: [''],
+      lugar_llegada: [''],
+      responsable_frente: [''],
+
+      // Production rows
+      productionRows: this.fb.array([]),
+    });
+  }
+
+  get productionRows(): FormArray {
+    return this.reportForm.get('productionRows') as FormArray;
+  }
+
+  addProductionRow(): void {
+    if (this.productionRows.length >= 16) return;
+    this.productionRows.push(
+      this.fb.group({
+        edt_id: [''],
+        ubicacion_prog_ini: [''],
+        ubicacion_prog_fin: [''],
+        hora_ini: [''],
+        hora_fin: [''],
+        material_descripcion: [''],
+        metrado: [''],
+      })
+    );
+  }
+
+  removeProductionRow(index: number): void {
+    this.productionRows.removeAt(index);
+  }
+
+  private loadEdtOptions(): void {
+    this.edtService.getDropdownOptions().subscribe({
+      next: (items) => {
+        this.edtOptions = items.map((item) => ({
+          label: `${item.codigo} - ${item.nombre}`,
+          value: item.id,
+        }));
+      },
+      error: () => {},
     });
   }
 
   setupFormListeners(): void {
-    // Auto-calculate hours worked
     this.reportForm
       .get('horometro_final')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -167,18 +193,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.calculateHoursWorked());
 
-    // Auto-calculate fuel consumed
-    this.reportForm
-      .get('fuel_start')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.calculateFuelConsumed());
-
-    this.reportForm
-      .get('fuel_end')
-      ?.valueChanges.pipe(takeUntil(this.destroy$))
-      .subscribe(() => this.calculateFuelConsumed());
-
-    // Validate time range
     this.reportForm
       .get('hora_fin')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -189,7 +203,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       ?.valueChanges.pipe(takeUntil(this.destroy$))
       .subscribe(() => this.validateTimeRange());
 
-    // Auto-fill horas_precalentamiento when equipo changes
     this.reportForm
       .get('equipo_id')
       ?.valueChanges.pipe(takeUntil(this.destroy$))
@@ -197,7 +210,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   onEquipoChange(equipoId: unknown): void {
-    console.log('Equipment changed:', equipoId);
     if (!equipoId || this.precalentamientoOverride) {
       if (!equipoId) {
         this.precalentamientoTipoNombre = '';
@@ -207,37 +219,20 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     }
 
     const equipo = this.equipment.find((e) => e.id === Number(equipoId));
-    if (equipo) {
-      console.log('Selected equipment details:', equipo);
-      if (!equipo.tipo_equipo_id) {
-        this.precalentamientoTipoNombre = '';
-        this.showPrecalentamiento = false;
-        this.reportForm.patchValue({ horas_precalentamiento: 0 });
-        return;
-      }
+    if (equipo?.tipo_equipo_id) {
       this.precalentamientoTipoNombre = equipo.tipo_equipo_nombre || equipo.categoria || '';
       this.precalentamientoService.obtenerHoras(equipo.tipo_equipo_id).subscribe({
         next: (data: any) => {
-          if (data && (data['horas_precalentamiento'] as number) > 0) {
-            this.showPrecalentamiento = true;
-            if (!this.precalentamientoOverride) {
-              this.reportForm.patchValue({
-                horas_precalentamiento: data['horas_precalentamiento'],
-              });
-            }
-          } else {
-            this.showPrecalentamiento = false;
-            this.reportForm.patchValue({ horas_precalentamiento: 0 });
+          if (data?.['horas_precalentamiento'] > 0 && !this.precalentamientoOverride) {
+            this.reportForm.patchValue({
+              horas_precalentamiento: data['horas_precalentamiento'],
+            });
           }
         },
-        error: () => {
-          this.showPrecalentamiento = false;
-        },
+        error: () => {},
       });
     } else {
-      console.warn('Equipment not found in local list:', equipoId);
       this.precalentamientoTipoNombre = '';
-      this.showPrecalentamiento = false;
       this.reportForm.patchValue({ horas_precalentamiento: 0 });
     }
   }
@@ -260,8 +255,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
             ? equipmentRes
             : ((equipmentRes as Record<string, unknown>)?.['data'] as Equipment[]) || [];
           this.equipment = equipment;
-          this.filteredEquipment = equipment;
-          console.log('Equipment loaded into component:', this.equipment.length);
 
           this.equipmentOptions = equipment
             .filter((eq: Equipment) => eq && (eq.codigo_equipo || eq.id))
@@ -303,37 +296,30 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     this.loading = true;
     this.dailyReportService.getById(id).subscribe({
       next: (report: any) => {
-        // Calculate fuel_end from consumed if needed
-        let fuelEnd = report['fuel_end'] as number | undefined;
-        if (
-          report['combustible_inicial'] !== undefined &&
-          report['combustible_consumido'] !== undefined
-        ) {
-          fuelEnd =
-            (report['combustible_inicial'] as number) - (report['combustible_consumido'] as number);
-        }
-
         this.reportForm.patchValue({
-          fecha_parte: report['fecha'] || report['fecha_parte'],
+          fecha: report['fecha'],
           trabajador_id: report['trabajador_id'],
           equipo_id: report['equipo_id'],
           proyecto_id: report['proyecto_id'],
+          turno: report['turno'],
           hora_inicio: report['hora_inicio'],
           hora_fin: report['hora_fin'],
+          lugar_salida: report['lugar_salida'] || '',
+          gps_latitude: report['gps_latitude'],
+          gps_longitude: report['gps_longitude'],
           horometro_inicial: report['horometro_inicial'],
           horometro_final: report['horometro_final'],
+          horas_precalentamiento: report['horas_precalentamiento'] ?? 0,
           odometro_inicial: report['odometro_inicial'],
           odometro_final: report['odometro_final'],
-          fuel_start: report['combustible_inicial'] || report['fuel_start'],
-          fuel_end: fuelEnd,
-          // Map API field names to form field names
-          location: report['lugar_salida'] || report['location'] || '',
-          work_description: report['observaciones'] || report['work_description'] || '',
-          notes: report['observaciones_correcciones'] || report['notes'],
-          weather_conditions: report['weather_conditions'], // Might not exist in backend yet
-          gps_latitude: report['gps_latitude'], // Might not exist in backend yet
-          gps_longitude: report['gps_longitude'], // Might not exist in backend yet
-          horas_precalentamiento: report['horas_precalentamiento'] ?? 0,
+          observaciones: report['observaciones'] || '',
+          observaciones_correcciones: report['observaciones_correcciones'],
+          combustible_inicial: report['combustible_inicial'],
+          combustible_cargado: report['combustible_cargado'],
+          num_vale_combustible: report['num_vale_combustible'],
+          weather_conditions: report['weather_conditions'],
+          lugar_llegada: report['lugar_llegada'],
+          responsable_frente: report['responsable_frente'],
         });
         this.loading = false;
       },
@@ -346,23 +332,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   calculateHoursWorked(): void {
-    const start = this.reportForm.get('horometro_inicial')?.value;
-    const end = this.reportForm.get('horometro_final')?.value;
-
-    if (start && end && end >= start) {
-      const _hours = end - start;
-      // Display calculated hours (optional field to show)
-    }
-  }
-
-  calculateFuelConsumed(): void {
-    const start = this.reportForm.get('fuel_start')?.value;
-    const end = this.reportForm.get('fuel_end')?.value;
-
-    if (start && end && start >= end) {
-      const consumed = start - end;
-      this.reportForm.get('fuel_consumed')?.setValue(consumed.toFixed(2));
-    }
+    // Triggers getter recalculation in template
   }
 
   validateTimeRange(): void {
@@ -379,21 +349,18 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     if (input.files) {
       const files = Array.from(input.files);
 
-      // Validate number of photos
       if (this.uploadedPhotos.length + files.length > this.maxPhotos) {
-        this.showError(`Máximo ${this.maxPhotos} fotos permitidas`);
+        this.showError(`Maximo ${this.maxPhotos} fotos permitidas`);
         return;
       }
 
-      // Validate file sizes
       for (const file of files) {
         if (file.size > this.maxPhotoSize) {
-          this.showError(`El archivo ${file.name} excede el tamaño máximo de 5MB`);
+          this.showError(`El archivo ${file.name} excede el tamano maximo de 5MB`);
           return;
         }
-
         if (!file.type.startsWith('image/')) {
-          this.showError(`El archivo ${file.name} no es una imagen válida`);
+          this.showError(`El archivo ${file.name} no es una imagen valida`);
           return;
         }
       }
@@ -408,7 +375,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   captureGPS(): void {
     if ('geolocation' in navigator) {
-      this.showInfo('Capturando ubicación GPS...');
+      this.showInfo('Capturando ubicacion GPS...');
 
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -417,24 +384,18 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
             gps_longitude: position.coords.longitude,
           });
 
-          // Optionally set location text
-          if (!this.reportForm.get('location')?.value) {
+          if (!this.reportForm.get('lugar_salida')?.value) {
             this.reportForm.patchValue({
-              location: `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
+              lugar_salida: `${position.coords.latitude.toFixed(6)}, ${position.coords.longitude.toFixed(6)}`,
             });
           }
 
-          this.showSuccess('Ubicación GPS capturada');
+          this.showSuccess('Ubicacion GPS capturada');
         },
-        (error) => {
-          console.error('Error getting GPS location:', error);
-          this.showError('Error al capturar ubicación GPS');
+        () => {
+          this.showError('Error al capturar ubicacion GPS');
         },
-        {
-          enableHighAccuracy: true,
-          timeout: 10000,
-          maximumAge: 0,
-        }
+        { enableHighAccuracy: true, timeout: 10000, maximumAge: 0 }
       );
     } else {
       this.showError('GPS no disponible en este dispositivo');
@@ -446,54 +407,18 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
     window.addEventListener('online', () => {
       this.isOffline = false;
-      this.showSuccess('Conexión restaurada. Sincronizando...');
+      this.showSuccess('Conexion restaurada. Sincronizando...');
       this.swService.syncPendingReports();
     });
 
     window.addEventListener('offline', () => {
       this.isOffline = true;
-      this.showWarning('Sin conexión. Los cambios se guardarán localmente.');
+      this.showWarning('Sin conexion. Los cambios se guardaran localmente.');
     });
   }
 
   saveAsDraft(): void {
-    if (this.reportForm.invalid) {
-      this.showError('Por favor complete los campos requeridos');
-      return;
-    }
-
     this.saveReport('BORRADOR');
-  }
-
-  private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): Record<string, unknown> {
-    const formValue = this.reportForm.getRawValue();
-
-    return {
-      fecha: formValue.fecha_parte,
-      trabajador_id: Number(formValue.trabajador_id),
-      equipo_id: Number(formValue.equipo_id),
-      proyecto_id: formValue.proyecto_id ? Number(formValue.proyecto_id) : null,
-      hora_inicio: formValue.hora_inicio,
-      hora_fin: formValue.hora_fin,
-      horometro_inicial: Number(formValue.horometro_inicial),
-      horometro_final: Number(formValue.horometro_final),
-      odometro_inicial: formValue.odometro_inicial ? Number(formValue.odometro_inicial) : null,
-      odometro_final: formValue.odometro_final ? Number(formValue.odometro_final) : null,
-      combustible_inicial: formValue.fuel_start ? Number(formValue.fuel_start) : null,
-      combustible_consumido:
-        formValue.fuel_start && formValue.fuel_end
-          ? Number((formValue.fuel_start - formValue.fuel_end).toFixed(2))
-          : null,
-      numero_vale_combustible: formValue.numero_vale_combustible || null,
-      lugar_salida: formValue.location || 'Obra',
-      observaciones: formValue.work_description || 'Sin observaciones',
-      observaciones_correcciones: formValue.notes || null,
-      estado: status,
-      gps_latitude: formValue.gps_latitude ? Number(formValue.gps_latitude) : null,
-      gps_longitude: formValue.gps_longitude ? Number(formValue.gps_longitude) : null,
-      weather_conditions: formValue.weather_conditions || null,
-      horas_precalentamiento: Number(formValue.horas_precalentamiento) || 0,
-    };
   }
 
   submitReport(): void {
@@ -504,6 +429,41 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     }
 
     this.saveReport('PENDIENTE');
+  }
+
+  private toCreateDto(status: 'BORRADOR' | 'PENDIENTE'): Record<string, unknown> {
+    const f = this.reportForm.getRawValue();
+
+    return {
+      fecha: f.fecha,
+      trabajador_id: Number(f.trabajador_id),
+      equipo_id: Number(f.equipo_id),
+      proyecto_id: f.proyecto_id ? Number(f.proyecto_id) : null,
+      turno: f.turno || null,
+      hora_inicio: f.hora_inicio,
+      hora_fin: f.hora_fin,
+      lugar_salida: f.lugar_salida || 'Obra',
+      gps_latitude: f.gps_latitude ? Number(f.gps_latitude) : null,
+      gps_longitude: f.gps_longitude ? Number(f.gps_longitude) : null,
+      horometro_inicial: Number(f.horometro_inicial),
+      horometro_final: Number(f.horometro_final),
+      horas_precalentamiento: Number(f.horas_precalentamiento) || 0,
+      odometro_inicial: f.odometro_inicial ? Number(f.odometro_inicial) : null,
+      odometro_final: f.odometro_final ? Number(f.odometro_final) : null,
+      observaciones: f.observaciones || 'Sin observaciones',
+      observaciones_correcciones: f.observaciones_correcciones || null,
+      combustible_inicial: f.combustible_inicial ? Number(f.combustible_inicial) : null,
+      combustible_consumido: null,
+      combustible_cargado: f.combustible_cargado ? Number(f.combustible_cargado) : null,
+      num_vale_combustible: f.num_vale_combustible || null,
+      weather_conditions: f.weather_conditions || null,
+      lugar_llegada: f.lugar_llegada || null,
+      responsable_frente: f.responsable_frente || null,
+      estado: status,
+      produccionRows: f.productionRows?.filter((r: any) =>
+        r.edt_id || r.ubicacion_prog_ini || r.material_descripcion || r.metrado
+      ) || [],
+    };
   }
 
   private saveReport(status: 'BORRADOR' | 'PENDIENTE'): void {
@@ -519,7 +479,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
       next: (response: Record<string, unknown> | any) => {
         this.saving = false;
 
-        // Upload photos if any
         if (this.uploadedPhotos.length > 0 && response['id']) {
           this.uploadPhotos(response['id'] as string | number);
         }
@@ -528,7 +487,6 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
           status === 'BORRADOR' ? 'Borrador guardado exitosamente' : 'Reporte enviado exitosamente';
         this.showSuccess(message);
 
-        // Navigate back to daily reports list
         setTimeout(() => {
           this.router.navigate(['/equipment/daily-reports']);
         }, 1500);
@@ -539,7 +497,7 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
         if (this.isOffline) {
           this.syncManager.storePendingReport(reportData as Record<string, unknown>).then(
-            () => this.showWarning('Guardado localmente. Se sincronizará cuando haya conexión.'),
+            () => this.showWarning('Guardado localmente. Se sincronizara cuando haya conexion.'),
             () => this.showError('Error al guardar localmente')
           );
         } else {
@@ -551,17 +509,12 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
 
   private uploadPhotos(reportId: string | number): void {
     const formData = new FormData();
-    this.uploadedPhotos.forEach((photo, _index) => {
+    this.uploadedPhotos.forEach((photo) => {
       formData.append('photos', photo, photo.name);
     });
     this.dailyReportService.uploadPhotos(reportId, formData).subscribe({
-      next: () => {
-        this.showSuccess('Fotos subidas exitosamente');
-      },
-      error: (error: unknown) => {
-        console.error('Error uploading photos:', error);
-        this.showWarning('Error al subir fotos, pero el reporte fue guardado');
-      },
+      next: () => this.showSuccess('Fotos subidas exitosamente'),
+      error: () => this.showWarning('Error al subir fotos, pero el reporte fue guardado'),
     });
   }
 
@@ -580,12 +533,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
         window.URL.revokeObjectURL(url);
         this.downloadingPdf = false;
       },
-      error: (err) => {
-        console.error('Error al descargar PDF:', err);
-        this.snackBar.open('No se pudo descargar el PDF', 'Cerrar', {
-          duration: 3000,
-          panelClass: ['snackbar-error'],
-        });
+      error: () => {
+        this.showError('No se pudo descargar el PDF');
         this.downloadingPdf = false;
       },
     });
@@ -595,8 +544,8 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
     if (this.reportForm.dirty) {
       this.confirmSvc
         .confirm({
-          title: 'Confirmar Cancelación',
-          message: '¿Está seguro de cancelar? Los cambios no guardados se perderán.',
+          title: 'Confirmar Cancelacion',
+          message: 'Esta seguro de cancelar? Los cambios no guardados se perderan.',
           icon: 'fa-triangle-exclamation',
           confirmLabel: 'Salir sin guardar',
           isDanger: true,
@@ -623,34 +572,22 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   private showSuccess(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 3000,
-      panelClass: ['snackbar-success'],
-    });
+    this.snackBar.open(message, 'Cerrar', { duration: 3000, panelClass: ['snackbar-success'] });
   }
 
   private showError(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 5000,
-      panelClass: ['snackbar-error'],
-    });
+    this.snackBar.open(message, 'Cerrar', { duration: 5000, panelClass: ['snackbar-error'] });
   }
 
   private showWarning(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 4000,
-      panelClass: ['snackbar-warning'],
-    });
+    this.snackBar.open(message, 'Cerrar', { duration: 4000, panelClass: ['snackbar-warning'] });
   }
 
   private showInfo(message: string): void {
-    this.snackBar.open(message, 'Cerrar', {
-      duration: 2000,
-      panelClass: ['snackbar-info'],
-    });
+    this.snackBar.open(message, 'Cerrar', { duration: 2000, panelClass: ['snackbar-info'] });
   }
 
-  // Getters for template
+  // Template getters
   get hoursWorked(): number {
     const start = this.reportForm.get('horometro_inicial')?.value;
     const end = this.reportForm.get('horometro_final')?.value;
@@ -658,9 +595,9 @@ export class DailyReportFormComponent implements OnInit, OnDestroy {
   }
 
   get fuelConsumed(): number {
-    const start = this.reportForm.get('fuel_start')?.value;
-    const end = this.reportForm.get('fuel_end')?.value;
-    return start && end && start >= end ? start - end : 0;
+    const start = this.reportForm.get('combustible_inicial')?.value;
+    const cargado = this.reportForm.get('combustible_cargado')?.value;
+    return start && cargado ? Number(cargado) : 0;
   }
 
   hasError(field: string): boolean {
