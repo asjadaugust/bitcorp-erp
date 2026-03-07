@@ -68,6 +68,8 @@ jobs:
   build-apk:
     needs: test
     runs-on: ubuntu-latest
+    permissions:
+      contents: write     # needed for gh release upload
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-java@v4
