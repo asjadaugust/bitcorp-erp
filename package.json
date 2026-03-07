@@ -46,7 +46,8 @@
     "api:test:help": "bash scripts/run-api-tests.sh help",
     "pack:ai": "npx repomix",
     "deadcode:frontend": "cd frontend && npx knip --config knip.json",
-    "deadcode": "npm run deadcode:frontend"
+    "deadcode": "npm run deadcode:frontend",
+    "ci:check": "cd backend && ruff check app/ tests/ && cd .. && docker-compose exec -T backend python -m pytest tests/ -q"
   },
   "devDependencies": {
     "@commitlint/cli": "^19.8.1",
