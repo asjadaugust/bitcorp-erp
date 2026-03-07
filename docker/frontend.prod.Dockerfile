@@ -12,8 +12,8 @@ FROM nginx:alpine
 
 COPY --from=builder /app/dist/bitcorp-erp-frontend/browser /usr/share/nginx/html
 RUN chmod -R 755 /usr/share/nginx/html
-COPY nginx-https.conf /etc/nginx/conf.d/default.conf
+COPY nginx-prod.conf /etc/nginx/conf.d/default.conf
 
-EXPOSE 80 443
+EXPOSE 80
 
 CMD ["nginx", "-g", "daemon off;"]
