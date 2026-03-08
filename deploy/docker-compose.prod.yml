@@ -93,6 +93,8 @@ services:
       context: ../frontend
       dockerfile: ../docker/frontend.prod.Dockerfile
     container_name: bitcorp-frontend-prod
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     ports:
       - "3420:80"
     depends_on:
