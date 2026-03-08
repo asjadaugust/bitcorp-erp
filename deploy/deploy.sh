@@ -94,7 +94,7 @@ do_deploy() {
     # Checkout tag
     log "Fetching and checking out $tag..."
     cd "$PROJECT_DIR"
-    git fetch --tags
+    git fetch --tags --force
     git checkout "$tag" || die "Failed to checkout $tag"
 
     # Rebuild
@@ -136,6 +136,7 @@ do_rollback() {
     log "=== ROLLING BACK to $tag ==="
 
     cd "$PROJECT_DIR"
+    git fetch --tags --force
     git checkout "$tag" || die "Failed to checkout $tag"
 
     docker compose -f "$COMPOSE_FILE" down
