@@ -1,0 +1,27 @@
+<svg width="40" height="40" viewBox="0 0 40 40" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect width="40" height="40" rx="8" fill="#0077CD"/>
+  <!-- Double hexagon: outer ring + inner ring -->
+  <polygon points="20,7 31,13.5 31,26.5 20,33 9,26.5 9,13.5" fill="none" stroke="white" stroke-width="1.5" stroke-linejoin="round"/>
+  <polygon points="20,13 25.5,16.5 25.5,23.5 20,27 14.5,23.5 14.5,16.5" fill="none" stroke="white" stroke-width="1.2" stroke-linejoin="round"/>
+  <!-- Connections between outer and inner vertices -->
+  <line x1="20" y1="7" x2="20" y2="13" stroke="white" stroke-width="1"/>
+  <line x1="31" y1="13.5" x2="25.5" y2="16.5" stroke="white" stroke-width="1"/>
+  <line x1="31" y1="26.5" x2="25.5" y2="23.5" stroke="white" stroke-width="1"/>
+  <line x1="20" y1="33" x2="20" y2="27" stroke="white" stroke-width="1"/>
+  <line x1="9" y1="26.5" x2="14.5" y2="23.5" stroke="white" stroke-width="1"/>
+  <line x1="9" y1="13.5" x2="14.5" y2="16.5" stroke="white" stroke-width="1"/>
+  <!-- Outer nodes -->
+  <circle cx="20" cy="7" r="2" fill="white"/>
+  <circle cx="31" cy="13.5" r="2" fill="white"/>
+  <circle cx="31" cy="26.5" r="2" fill="white"/>
+  <circle cx="20" cy="33" r="2" fill="white"/>
+  <circle cx="9" cy="26.5" r="2" fill="white"/>
+  <circle cx="9" cy="13.5" r="2" fill="white"/>
+  <!-- Inner nodes -->
+  <circle cx="20" cy="13" r="1.5" fill="white"/>
+  <circle cx="25.5" cy="16.5" r="1.5" fill="white"/>
+  <circle cx="25.5" cy="23.5" r="1.5" fill="white"/>
+  <circle cx="20" cy="27" r="1.5" fill="white"/>
+  <circle cx="14.5" cy="23.5" r="1.5" fill="white"/>
+  <circle cx="14.5" cy="16.5" r="1.5" fill="white"/>
+</svg>
