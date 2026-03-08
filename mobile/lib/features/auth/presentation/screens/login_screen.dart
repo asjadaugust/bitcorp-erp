@@ -17,10 +17,12 @@ class _LoginScreenState extends ConsumerState<LoginScreen> {
 
   Future<void> _submitLogin() async {
     if (_formKey.currentState?.validate() ?? false) {
-      await ref
+      final success = await ref
           .read(authProvider.notifier)
           .login(_usernameController.text, _passwordController.text);
-      // The GoRouter redirect will handle navigation on success.
+      if (!success) {
+        _passwordController.clear();
+      }
     }
   }
 
