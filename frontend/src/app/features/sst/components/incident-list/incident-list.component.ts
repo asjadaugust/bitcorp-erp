@@ -83,7 +83,7 @@ export class IncidentListComponent implements OnInit {
   page = 1;
   filters = { severidad: '', estado: '' };
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'SST' }];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/dashboard' }, { label: 'SST' }];
 
   filterConfig: FilterConfig[] = [
     {

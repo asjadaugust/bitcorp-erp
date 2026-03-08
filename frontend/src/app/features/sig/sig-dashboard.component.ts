@@ -25,7 +25,7 @@ import {
   styles: [``],
 })
 export class SigDashboardComponent {
-  breadcrumbs = [{ label: 'Inicio', url: '/app' }, { label: 'SIG' }];
+  breadcrumbs = [{ label: 'Inicio', url: '/dashboard' }, { label: 'SIG' }];
 
   statItems: StatItem[] = [
     {

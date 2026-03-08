@@ -393,7 +393,7 @@ export class InspectionDetailComponent implements OnInit {
   statItems: StatItem[] = [];
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Listas de Verificación', url: '/checklists' },
     { label: 'Inspecciones', url: '/checklists/inspections' },
     { label: 'Detalle' },

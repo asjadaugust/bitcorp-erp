@@ -253,7 +253,7 @@ export class ReporteDetailComponent implements OnInit {
   deleting = false;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'SST', url: '/sst' },
     { label: 'Reportes A/C', url: '/sst/reportes-acto' },
     { label: 'Detalle' },

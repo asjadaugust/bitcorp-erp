@@ -244,7 +244,7 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
 export class InspectionTrackingComponent implements OnInit {
   tabs = EQUIPMENT_TABS;
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Seguimiento de Observaciones' },
   ];

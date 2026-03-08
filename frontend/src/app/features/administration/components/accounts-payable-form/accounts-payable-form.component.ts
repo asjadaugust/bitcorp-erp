@@ -200,7 +200,7 @@ export class AccountsPayableFormComponent implements OnInit {
   ];
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administración', url: '/administracion' },
     { label: 'Cuentas por Pagar', url: '/administracion/accounts-payable' },
     { label: 'Formulario' },

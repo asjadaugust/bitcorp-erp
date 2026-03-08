@@ -57,7 +57,7 @@ import {
       [tabs]="tabs"
       [subtabs]="subtabs"
       [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
+        { label: 'Inicio', url: '/dashboard' },
         { label: 'Equipos', url: '/equipment' },
         { label: 'Partes Diarios' },
       ]"

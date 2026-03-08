@@ -296,7 +296,7 @@ export class RolePermissionMatrixComponent implements OnInit {
   updatingSet = new Set<string>();
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Permisos', url: '/permissions' },
     { label: 'Matriz' },
   ];

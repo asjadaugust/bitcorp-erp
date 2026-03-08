@@ -87,7 +87,7 @@ export class ReporteListComponent implements OnInit {
   filters = { tipo_reporte: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'SST', url: '/sst' },
     { label: 'Reportes A/C' },
   ];

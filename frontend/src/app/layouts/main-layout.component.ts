@@ -110,8 +110,8 @@ export class MainLayoutComponent implements OnInit {
   }
 
   private updateSidebarVisibility(url: string): void {
-    // Hide sidebar only on /app route (dashboard landing page)
-    this.showSidebar = url !== '/app';
+    // Hide sidebar only on /dashboard route (dashboard landing page)
+    this.showSidebar = url !== '/dashboard';
   }
 
   onSidebarCollapsedChange(collapsed: boolean) {

@@ -285,7 +285,7 @@ export class InspectionListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Listas de Verificación', url: '/checklists' },
     { label: 'Inspecciones' },
   ];

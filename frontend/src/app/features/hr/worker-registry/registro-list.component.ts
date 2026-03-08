@@ -84,7 +84,7 @@ export class RegistroListComponent implements OnInit {
   filters = { search: '', estatus: '', sub_grupo: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'RRHH', url: '/rrhh' },
     { label: 'Registro Trabajadores' },
   ];

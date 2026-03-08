@@ -235,7 +235,7 @@ export class EvaluacionDetailComponent implements OnInit {
   deleting = false;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Proveedores', url: '/providers' },
     { label: 'Evaluaciones', url: '/providers/evaluaciones' },
     { label: 'Detalle' },

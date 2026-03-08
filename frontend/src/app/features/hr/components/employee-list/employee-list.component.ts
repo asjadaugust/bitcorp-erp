@@ -171,7 +171,7 @@ export class EmployeeListComponent implements OnInit {
   searchTerm = '';
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'RRHH', url: '/rrhh' },
     { label: 'Personal' },
   ];

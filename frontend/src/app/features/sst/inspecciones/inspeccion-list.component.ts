@@ -84,7 +84,7 @@ export class InspeccionListComponent implements OnInit {
   filters = { tipo_inspeccion: '', nivel_riesgo: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'SST', url: '/sst' },
     { label: 'Inspecciones' },
   ];

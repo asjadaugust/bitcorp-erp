@@ -49,7 +49,7 @@ export class CategoriaListComponent implements OnInit {
   loading = false;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Logistica', url: '/logistics' },
     { label: 'Categorias' },
   ];

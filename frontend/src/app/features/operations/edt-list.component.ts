@@ -241,7 +241,7 @@ export class EdtListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Operaciones', url: '/operaciones' },
     { label: 'EDT' },
   ];

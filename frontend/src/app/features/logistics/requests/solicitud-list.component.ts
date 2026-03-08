@@ -84,7 +84,7 @@ export class SolicitudListComponent implements OnInit {
   filters = { search: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Logistica', url: '/logistics' },
     { label: 'Solicitudes de Material' },
   ];

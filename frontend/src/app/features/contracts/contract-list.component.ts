@@ -181,7 +181,7 @@ export class ContractListComponent implements OnInit {
   filters = { estado: '', search: '' };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Contratos' },

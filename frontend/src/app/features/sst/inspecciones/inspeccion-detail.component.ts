@@ -298,7 +298,7 @@ export class InspeccionDetailComponent implements OnInit {
   seguimientoForm!: FormGroup;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'SST', url: '/sst' },
     { label: 'Inspecciones', url: '/sst/inspecciones' },
     { label: 'Detalle' },

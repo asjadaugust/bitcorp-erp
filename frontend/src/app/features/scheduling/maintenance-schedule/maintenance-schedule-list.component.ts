@@ -36,7 +36,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       title="Programación de Mantenimiento"
       icon="fa-calendar"
       [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
+        { label: 'Inicio', url: '/dashboard' },
         { label: 'Equipos', url: '/equipment' },
         { label: 'Mantenimiento', url: '/equipment/maintenance' },
         { label: 'Programación' },

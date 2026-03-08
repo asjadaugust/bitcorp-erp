@@ -196,7 +196,7 @@ export class ActaDevolucionListComponent implements OnInit {
   totalPages = 1;
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Actas de Devolución' },
   ];

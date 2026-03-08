@@ -397,7 +397,7 @@ export class TemplateFormComponent implements OnInit {
   ];
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Checklists', url: '/checklists' },
     { label: 'Plantillas', url: '/checklists/templates' },
     { label: 'Nuevo' },

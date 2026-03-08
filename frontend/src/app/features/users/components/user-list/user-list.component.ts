@@ -335,7 +335,10 @@ export class UserListComponent implements OnInit {
   passwordResetMessage = '';
   passwordResetSuccess = false;
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'Gestión de Usuarios' }];
+  breadcrumbs: Breadcrumb[] = [
+    { label: 'Inicio', url: '/dashboard' },
+    { label: 'Gestión de Usuarios' },
+  ];
 
   filterConfig: FilterConfig[] = [
     {

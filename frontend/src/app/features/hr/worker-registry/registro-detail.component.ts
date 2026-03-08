@@ -274,7 +274,7 @@ export class RegistroDetailComponent implements OnInit {
   historialForm!: FormGroup;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'RRHH', url: '/rrhh' },
     { label: 'Registro', url: '/rrhh/worker-registry' },
     { label: 'Detalle' },

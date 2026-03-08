@@ -36,16 +36,9 @@ export const roleGuard: CanActivateFn = (route: ActivatedRouteSnapshot) => {
             router.navigate(['/operator/dashboard']);
           }
         } else {
-          // If we are already at /app or a child, and we don't have access,
-          // redirecting to /app will cause a loop if /app also requires the role.
-          // But /app is the default fallback.
-          // We should probably redirect to a "not authorized" page or login.
-          // For now, let's just check if we are not already at /app
-          if (currentUrl !== '/app' && !currentUrl.startsWith('/app/')) {
-            router.navigate(['/app']);
+          if (currentUrl !== '/dashboard' && !currentUrl.startsWith('/dashboard/')) {
+            router.navigate(['/dashboard']);
           } else {
-            // We are at /app and don't have access.
-            // Redirect to login to avoid loop? Or show error?
             console.error('Infinite redirect loop detected in RoleGuard. Redirecting to login.');
             router.navigate(['/login']);
           }

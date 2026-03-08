@@ -169,7 +169,7 @@ export class PettyCashDetailComponent implements OnInit {
   closing = false;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administraci\u00f3n', url: '/administracion' },
     { label: 'Caja Chica', url: '/administracion/petty-cash' },
     { label: 'Detalle' },

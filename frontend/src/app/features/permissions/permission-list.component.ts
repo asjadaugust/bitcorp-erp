@@ -72,7 +72,7 @@ export class PermissionListComponent implements OnInit {
   loading = false;
   filters = { search: '', proceso: '' };
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'Permisos' }];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/dashboard' }, { label: 'Permisos' }];
 
   filterConfig: FilterConfig[] = [
     {

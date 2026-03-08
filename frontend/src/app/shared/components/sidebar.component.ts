@@ -32,7 +32,7 @@ interface NavItem {
               <a
                 [routerLink]="item.route"
                 routerLinkActive="active"
-                [routerLinkActiveOptions]="{ exact: item.children ? true : false }"
+                [routerLinkActiveOptions]="{ exact: false }"
                 class="nav-link"
                 *ngIf="hasAccess(item)"
                 [title]="collapsed ? item.label : ''"

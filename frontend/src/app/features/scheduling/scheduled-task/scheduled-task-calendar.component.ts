@@ -25,7 +25,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
       title="Calendario de Tareas"
       icon="fa-calendar-check"
       [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
+        { label: 'Inicio', url: '/dashboard' },
         { label: 'Operaciones', url: '/operaciones' },
         { label: 'Programación', url: '/operaciones/scheduling/tasks' },
         { label: 'Calendario' },

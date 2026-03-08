@@ -46,7 +46,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
       title="Programación de Tareas"
       icon="fa-calendar-check"
       [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
+        { label: 'Inicio', url: '/dashboard' },
         { label: 'Operaciones', url: '/operaciones' },
         { label: 'Programación' },
       ]"

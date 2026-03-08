@@ -33,7 +33,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     <app-page-layout
       title="Gestión de Operadores"
       icon="fa-users-gear"
-      [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Operadores' }]"
+      [breadcrumbs]="[{ label: 'Inicio', url: '/dashboard' }, { label: 'Operadores' }]"
       [loading]="loading"
     >
       <div actions>

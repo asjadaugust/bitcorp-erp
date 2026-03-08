@@ -88,7 +88,6 @@ export type Breadcrumb = BreadcrumbItem;
       }
 
       .nav-container {
-        padding: 0 54px;
         background: transparent;
       }
 

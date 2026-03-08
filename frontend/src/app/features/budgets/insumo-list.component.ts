@@ -281,7 +281,7 @@ export class InsumoListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Presupuestos', url: '/presupuestos' },
     { label: 'Insumos' },
   ];
