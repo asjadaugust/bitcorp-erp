@@ -61,7 +61,7 @@ services:
     container_name: bitcorp-backend-prod
     environment:
       ENVIRONMENT: production
-      CORS_ORIGINS: "https://${DOMAIN:-bitcorp.mohammadasjad.com}"
+      CORS_ORIGINS: "https://${DOMAIN:-bitcorp.app},https://bitcorp.mohammadasjad.com"
       JWT_SECRET: ${JWT_SECRET}
       JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET}
       PORT: "3400"
