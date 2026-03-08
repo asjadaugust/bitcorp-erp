@@ -47,6 +47,10 @@ database/backups/*.sql
 !database/backups/.gitkeep
 pgadmin_data/
 
+# Deploy runtime artifacts
+deploy/.last-good-tag
+deploy/backups/
+
 # Docker
 .docker/
 
