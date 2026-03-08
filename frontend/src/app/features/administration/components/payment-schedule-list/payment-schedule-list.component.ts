@@ -158,7 +158,7 @@ export class PaymentScheduleListComponent implements OnInit {
   filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administración', url: '/administracion' },
     { label: 'Programación de Pagos' },
   ];

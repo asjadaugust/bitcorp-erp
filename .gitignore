@@ -119,3 +119,6 @@ repomix-output.txt
 
 # openapi-typescript generated types (regenerate via npm run generate:types)
 frontend/src/app/core/types/api.gen.ts
+
+# Screenshots
+*.png

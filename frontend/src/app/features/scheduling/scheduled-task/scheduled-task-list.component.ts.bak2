@@ -31,7 +31,7 @@ import { ActionsContainerComponent } from '../../../shared/components/actions-co
       title="Programación de Tareas"
       icon="fa-calendar-check"
       [breadcrumbs]="[
-        { label: 'Dashboard', url: '/app' },
+        { label: 'Dashboard', url: '/dashboard' },
         { label: 'Operaciones', url: '/operaciones' },
         { label: 'Programación' },
       ]"

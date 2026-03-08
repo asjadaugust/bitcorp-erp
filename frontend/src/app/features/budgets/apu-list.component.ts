@@ -277,7 +277,7 @@ export class ApuListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Presupuestos', url: '/presupuestos' },
     { label: 'APUs' },
   ];

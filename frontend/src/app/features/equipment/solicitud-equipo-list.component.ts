@@ -220,7 +220,7 @@ export class SolicitudEquipoListComponent implements OnInit {
   statItems: StatItem[] = [];
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Solicitudes' },

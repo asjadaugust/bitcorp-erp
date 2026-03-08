@@ -49,7 +49,7 @@ import { AeroButtonComponent } from '../../core/design-system';
       title="Equipos"
       icon="fa-tractor"
       [tabs]="tabs"
-      [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Equipos' }]"
+      [breadcrumbs]="[{ label: 'Inicio', url: '/dashboard' }, { label: 'Equipos' }]"
       [loading]="loading"
     >
       <app-actions-container actions>

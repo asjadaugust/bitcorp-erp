@@ -1,5 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
+import { guestGuard } from './core/guards/guest.guard';
 import { roleGuard } from './core/guards/role.guard';
 import { ROLES } from './core/types/roles';
 
@@ -9,10 +10,12 @@ export const routes: Routes = [
     loadComponent: () =>
       import('./landing-page/landing-page.component').then((m) => m.LandingPageComponent),
     pathMatch: 'full',
+    canActivate: [guestGuard],
   },
   {
     path: 'login',
     loadComponent: () => import('./features/auth/login.component').then((m) => m.LoginComponent),
+    canActivate: [guestGuard],
   },
 
   // Main App Layout (Authenticated - Admin/Staff)
@@ -24,13 +27,13 @@ export const routes: Routes = [
     data: { roles: [ROLES.ADMIN, ROLES.DIRECTOR, ROLES.JEFE_EQUIPO] }, // Allow admin and other staff roles
     children: [
       {
-        path: 'app',
+        path: 'dashboard',
         loadComponent: () =>
           import('./features/dashboard/dashboard.component').then((m) => m.DashboardComponent),
       },
       {
-        path: 'dashboard',
-        redirectTo: 'app',
+        path: 'app',
+        redirectTo: 'dashboard',
         pathMatch: 'full',
       },
 
@@ -436,5 +439,5 @@ export const routes: Routes = [
     ],
   },
 
-  { path: '**', redirectTo: '/app' },
+  { path: '**', redirectTo: '/dashboard' },
 ];

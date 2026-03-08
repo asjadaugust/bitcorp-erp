@@ -328,7 +328,7 @@ export class ValuationRegistryComponent implements OnInit {
   totalRecords = 0;
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Valorizaciones' },
   ];

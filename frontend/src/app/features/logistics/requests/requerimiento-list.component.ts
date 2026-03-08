@@ -84,7 +84,7 @@ export class RequerimientoListComponent implements OnInit {
   filters = { search: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Logistica', url: '/logistics' },
     { label: 'Requerimientos' },
   ];

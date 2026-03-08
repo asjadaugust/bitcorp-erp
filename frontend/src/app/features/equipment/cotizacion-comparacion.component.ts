@@ -836,7 +836,7 @@ export class CotizacionComparacionComponent implements OnInit {
     this.solicitudId = Number(this.route.snapshot.paramMap.get('solicitudId'));
     this.backUrl = `/equipment/solicitudes/${this.solicitudId}`;
     this.breadcrumbs = [
-      { label: 'Inicio', url: '/app' },
+      { label: 'Inicio', url: '/dashboard' },
       { label: 'Equipos', url: '/equipment' },
       { label: 'Solicitud', url: this.backUrl },
       { label: 'Cuadro Comparativo' },

@@ -409,7 +409,7 @@ export class OrdenAlquilerListComponent implements OnInit {
   total = 0;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Operaciones', url: '/equipment/operaciones' },
     { label: 'Órdenes de Alquiler' },

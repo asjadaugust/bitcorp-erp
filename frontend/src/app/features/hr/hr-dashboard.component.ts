@@ -131,7 +131,7 @@ export class HrDashboardComponent {
   private router = inject(Router);
 
   tabs = HR_TABS;
-  breadcrumbs = [{ label: 'Inicio', url: '/app' }, { label: 'RRHH' }];
+  breadcrumbs = [{ label: 'Inicio', url: '/dashboard' }, { label: 'RRHH' }];
 
   navigateTo(path: string): void {
     this.router.navigate(['/rrhh', path]);

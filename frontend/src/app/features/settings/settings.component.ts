@@ -173,7 +173,10 @@ export class SettingsComponent {
   currentUser: User | null = null;
   activeTab = 'general';
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Dashboard', url: '/app' }, { label: 'Configuración' }];
+  breadcrumbs: Breadcrumb[] = [
+    { label: 'Dashboard', url: '/dashboard' },
+    { label: 'Configuración' },
+  ];
 
   tabs = [
     { id: 'general', label: 'General', icon: 'fa-sliders' },

@@ -87,7 +87,7 @@ export class BankCashListComponent implements OnInit {
   filters = { search: '', tipo_movimiento: '', moneda: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administración', url: '/administracion' },
     { label: 'Caja y Banco' },
   ];

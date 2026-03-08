@@ -243,7 +243,7 @@ export class LoginComponent {
           this.router.navigate(['/operator/dashboard']);
         } else {
           console.log('Navigating to main app');
-          this.router.navigate(['/app']);
+          this.router.navigate(['/dashboard']);
         }
       },
       error: (error) => {

@@ -149,7 +149,7 @@ export class PresupuestoListComponent implements OnInit {
   loading = false;
   filters = { search: '' };
 
-  breadcrumbs = [{ label: 'Inicio', url: '/app' }, { label: 'Presupuestos' }];
+  breadcrumbs = [{ label: 'Inicio', url: '/dashboard' }, { label: 'Presupuestos' }];
 
   tabs = BUDGET_TABS;
 

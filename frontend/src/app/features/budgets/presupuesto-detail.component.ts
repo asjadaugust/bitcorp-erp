@@ -586,7 +586,7 @@ export class PresupuestoDetailComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Presupuestos', url: '/presupuestos' },
     { label: 'Detalle' },
   ];

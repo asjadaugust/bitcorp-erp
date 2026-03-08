@@ -230,7 +230,7 @@ export class ProviderListComponent implements OnInit {
   page = 1;
   filters = { status: '', search: '' };
 
-  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/app' }, { label: 'Proveedores' }];
+  breadcrumbs: Breadcrumb[] = [{ label: 'Inicio', url: '/dashboard' }, { label: 'Proveedores' }];
 
   filterConfig: FilterConfig[] = [
     {

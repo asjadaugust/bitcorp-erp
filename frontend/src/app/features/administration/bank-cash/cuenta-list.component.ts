@@ -137,7 +137,7 @@ export class CuentaListComponent implements OnInit {
   submitting = false;
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administraci\u00f3n', url: '/administracion' },
     { label: 'Caja y Banco', url: '/administracion/bank-cash' },
     { label: 'Cuentas Bancarias' },

@@ -27,7 +27,6 @@ export { TabItem };
   styles: [
     `
       .nav-container {
-        padding: 0 54px;
         background: transparent;
       }
 

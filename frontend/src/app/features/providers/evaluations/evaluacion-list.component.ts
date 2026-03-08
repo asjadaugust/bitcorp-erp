@@ -74,7 +74,7 @@ export class EvaluacionListComponent implements OnInit {
   filters = { search: '', resultado: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Proveedores', url: '/providers' },
     { label: 'Evaluaciones' },
   ];

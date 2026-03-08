@@ -27,7 +27,7 @@ import { ClickOutsideDirective } from '../directives/click-outside.directive';
         <button class="mobile-menu-btn" (click)="toggleSidebar()">
           <i class="fa-solid fa-bars"></i>
         </button>
-        <a routerLink="/app" class="nav-brand">
+        <a routerLink="/dashboard" class="nav-brand">
           <img src="assets/logo.svg" alt="Bitcorp Logo" class="nav-logo" />
           <h1>Bitcorp ERP</h1>
         </a>

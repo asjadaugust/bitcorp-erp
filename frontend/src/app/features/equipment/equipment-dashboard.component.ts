@@ -43,7 +43,7 @@ import { EQUIPMENT_TABS } from './equipment-tabs';
       icon="fa-chart-line"
       [tabs]="tabs"
       [breadcrumbs]="[
-        { label: 'Inicio', url: '/app' },
+        { label: 'Inicio', url: '/dashboard' },
         { label: 'Equipos', url: '/equipment' },
         { label: 'Dashboard' },
       ]"

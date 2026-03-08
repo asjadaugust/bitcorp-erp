@@ -515,7 +515,7 @@ export class DailyReportReceptionComponent implements OnInit {
   private missingDatesMap = new Map<number, Set<string>>();
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Equipos', url: '/equipment' },
     { label: 'Recepción de Partes' },
   ];

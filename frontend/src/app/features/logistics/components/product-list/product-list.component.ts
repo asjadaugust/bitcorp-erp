@@ -197,7 +197,7 @@ export class ProductListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Productos' },
   ];

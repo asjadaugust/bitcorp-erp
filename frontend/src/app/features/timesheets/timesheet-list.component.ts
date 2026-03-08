@@ -197,7 +197,7 @@ export class TimesheetListComponent implements OnInit {
   error: string | null = null;
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Operaciones', url: '/operaciones' },
     { label: 'Planillas' },
   ];

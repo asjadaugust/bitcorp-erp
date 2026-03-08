@@ -43,7 +43,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     <app-page-layout
       title="Registro de Pagos"
       icon="fa-money-check-dollar"
-      [breadcrumbs]="[{ label: 'Inicio', url: '/app' }, { label: 'Registro de Pagos' }]"
+      [breadcrumbs]="[{ label: 'Inicio', url: '/dashboard' }, { label: 'Registro de Pagos' }]"
       [loading]="loading"
     >
       <app-actions-container actions>

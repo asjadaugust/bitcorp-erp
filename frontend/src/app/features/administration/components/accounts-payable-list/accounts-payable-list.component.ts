@@ -165,7 +165,7 @@ export class AccountsPayableListComponent implements OnInit {
   filters: Record<string, string> = { search: '', estado: '' };
 
   breadcrumbs: Breadcrumb[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Administración', url: '/administracion' },
     { label: 'Cuentas por Pagar' },
   ];

@@ -1174,7 +1174,7 @@ export class OperatorDailyReportComponent implements OnInit, OnDestroy {
   isViewMode = false;
   reportId: number | null = null;
   breadcrumbs: BreadcrumbItem[] = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Operador', url: '/operator/dashboard' },
     { label: 'Parte Diario' },
   ];
