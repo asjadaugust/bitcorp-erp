@@ -11,6 +11,7 @@ import {
   AeroButtonComponent,
   AeroCardComponent,
   AeroBadgeComponent,
+  AeroDatePickerComponent,
 } from '../../../core/design-system';
 import type { BadgeVariant } from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
@@ -22,6 +23,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
     AeroButtonComponent,
     AeroCardComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
     CommonModule,
     ReactiveFormsModule,
     DropdownComponent,
@@ -64,23 +66,19 @@ import { ConfirmService } from '../../../core/services/confirm.service';
             </div>
 
             <div class="form-group">
-              <label for="fecha_emision" class="form-label">Fecha de Emisión</label>
-              <input
-                id="fecha_emision"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha de Emisión"
                 formControlName="fecha_emision"
-                class="form-control"
-              />
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="fecha_vencimiento" class="form-label">Fecha de Vencimiento</label>
-              <input
-                id="fecha_vencimiento"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha de Vencimiento"
                 formControlName="fecha_vencimiento"
-                class="form-control"
-              />
+              ></aero-date-picker>
             </div>
 
             <div class="form-group full-width">

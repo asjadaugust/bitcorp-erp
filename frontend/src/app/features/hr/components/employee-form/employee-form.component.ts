@@ -13,6 +13,7 @@ import { AlertComponent } from '../../../../shared/components/alert/alert.compon
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
 import { AeroInputComponent } from '../../../../core/design-system/input/aero-input.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-employee-form',
@@ -26,6 +27,7 @@ import { AeroInputComponent } from '../../../../core/design-system/input/aero-in
     FormContainerComponent,
     FormSectionComponent,
     AeroInputComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -102,11 +104,11 @@ import { AeroInputComponent } from '../../../../core/design-system/input/aero-in
           </div>
 
           <div class="form-group">
-            <aero-input
+            <aero-date-picker
+              [mode]="'single'"
               label="Fecha Nacimiento"
-              type="date"
               formControlName="fecha_nacimiento"
-            ></aero-input>
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
@@ -150,11 +152,11 @@ import { AeroInputComponent } from '../../../../core/design-system/input/aero-in
         <!-- Section 3: Employment Details -->
         <app-form-section title="Información Laboral" icon="fa-briefcase" [columns]="2">
           <div class="form-group">
-            <aero-input
+            <aero-date-picker
+              [mode]="'single'"
               label="Fecha Ingreso"
-              type="date"
               formControlName="fecha_ingreso"
-            ></aero-input>
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

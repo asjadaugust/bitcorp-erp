@@ -6,7 +6,7 @@ import {
   AeroDataGridComponent,
   DataGridColumn,
 } from '../../../core/design-system/data-grid/aero-data-grid.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../core/design-system';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import {
@@ -23,6 +23,7 @@ import {
     FormsModule,
     AeroDataGridComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
     PageCardComponent,
   ],
   template: `
@@ -47,8 +48,11 @@ import {
               />
             </div>
             <div class="form-group">
-              <label class="form-label">Fecha</label>
-              <input type="date" class="form-control" [(ngModel)]="formData.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                [(ngModel)]="formData.fecha"
+                [label]="'Fecha'"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <label class="form-label">Cantidad (gal)</label>

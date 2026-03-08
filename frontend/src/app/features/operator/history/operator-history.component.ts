@@ -1,14 +1,14 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { DailyReportService } from '../../../core/services/daily-report.service';
 import { DailyReport } from '../../../core/models/daily-report.model';
 import { AuthService } from '../../../core/services/auth.service';
+import { DropdownOption } from '../../../shared/components/dropdown/dropdown.component';
 import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../../shared/components/dropdown/dropdown.component';
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../shared/components/filter-bar/filter-bar.component';
 import { PageLayoutComponent } from '../../../shared/components/page-layout/page-layout.component';
 import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
 import { MatSnackBar } from '@angular/material/snack-bar';
@@ -31,34 +31,17 @@ interface HistoryReport {
   imports: [
     CommonModule,
     RouterModule,
-    FormsModule,
-    DropdownComponent,
+    FilterBarComponent,
     PageLayoutComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
   ],
   template: `
     <app-page-layout title="Historial de Partes" icon="fa-history">
-      <!-- Filters -->
-      <div class="filters-bar">
-        <div class="filter-group">
-          <span class="label">Período:</span>
-          <app-dropdown
-            [(ngModel)]="selectedPeriod"
-            [options]="periodOptions"
-            (ngModelChange)="filterReports()"
-          ></app-dropdown>
-        </div>
-
-        <div class="filter-group">
-          <span class="label">Estado:</span>
-          <app-dropdown
-            [(ngModel)]="selectedStatus"
-            [options]="statusOptions"
-            (ngModelChange)="filterReports()"
-          ></app-dropdown>
-        </div>
-      </div>
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
 
       <!-- Summary Stats -->
       <div class="summary-stats">
@@ -169,28 +152,6 @@ interface HistoryReport {
   `,
   styles: [
     `
-      .filters-bar {
-        display: flex;
-        gap: 16px;
-        margin-bottom: 24px;
-        padding: 16px;
-        background: var(--grey-100);
-        border-radius: 8px;
-        box-shadow: var(--shadow-sm);
-      }
-
-      .filter-group {
-        display: flex;
-        align-items: center;
-        gap: 8px;
-      }
-
-      .filter-group .label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--grey-900);
-      }
-
       .summary-stats {
         display: flex;
         gap: 16px;
@@ -345,10 +306,6 @@ interface HistoryReport {
       }
 
       @media (max-width: 768px) {
-        .filters-bar {
-          flex-direction: column;
-        }
-
         .summary-stats {
           flex-direction: column;
         }
@@ -373,7 +330,7 @@ export class OperatorHistoryComponent implements OnInit {
   private confirmSvc = inject(ConfirmService);
 
   selectedPeriod = 'month';
-  selectedStatus = 'all';
+  selectedStatus = '';
   loading = true;
 
   allReports: HistoryReport[] = [];
@@ -384,15 +341,24 @@ export class OperatorHistoryComponent implements OnInit {
     { label: 'Último Mes', value: 'month' },
     { label: 'Último Trimestre', value: 'quarter' },
     { label: 'Último Año', value: 'year' },
-    { label: 'Todos', value: 'all' },
   ];
 
   statusOptions: DropdownOption[] = [
-    { label: 'Todos', value: 'all' },
     { label: 'Borradores', value: 'BORRADOR' },
     { label: 'Enviados', value: 'ENVIADO' },
     { label: 'Aprobados', value: 'APROBADO' },
     { label: 'Rechazados', value: 'RECHAZADO' },
+  ];
+
+  filterConfig: FilterConfig[] = [
+    {
+      key: 'period',
+      label: 'Período',
+      type: 'select',
+      value: 'month',
+      options: this.periodOptions,
+    },
+    { key: 'status', label: 'Estado', type: 'select', value: '', options: this.statusOptions },
   ];
 
   ngOnInit() {
@@ -443,16 +409,22 @@ export class OperatorHistoryComponent implements OnInit {
     });
   }
 
+  onFilterChange(filters: Record<string, unknown>) {
+    this.selectedPeriod = (filters['period'] as string) || '';
+    this.selectedStatus = (filters['status'] as string) || '';
+    this.filterReports();
+  }
+
   filterReports() {
     let filtered = [...this.allReports];
 
     // Filter by status
-    if (this.selectedStatus !== 'all') {
+    if (this.selectedStatus !== '') {
       filtered = filtered.filter((r) => r.status === this.selectedStatus);
     }
 
     // Filter by period
-    if (this.selectedPeriod !== 'all') {
+    if (this.selectedPeriod !== '') {
       const now = new Date();
       const periodDays: Record<string, number> = {
         week: 7,

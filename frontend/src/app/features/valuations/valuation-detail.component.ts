@@ -21,7 +21,12 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent, AeroBadgeComponent, BreadcrumbItem } from '../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  AeroDatePickerComponent,
+  BreadcrumbItem,
+} from '../../core/design-system';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../shared/components/page-layout/page-layout.component';
 import { CombustiblePanelComponent } from '../equipment/associations/combustible-panel.component';
@@ -43,6 +48,7 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
     AeroDataGridComponent,
     CombustiblePanelComponent,
     EdtPanelComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -1286,8 +1292,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <span class="label">Fecha de Pago<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="paymentData.fecha_pago" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha de Pago"
+                [(ngModel)]="paymentData.fecha_pago"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Método de Pago<span class="required">*</span></span>
@@ -1351,8 +1360,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <span class="label">Fecha<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="newDiscountEvent.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha"
+                [(ngModel)]="newDiscountEvent.fecha"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Tipo de Descuento<span class="required">*</span></span>
@@ -1526,8 +1538,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
               />
             </div>
             <div class="form-group">
-              <span class="label">Fecha</span>
-              <input type="date" class="form-control" [(ngModel)]="newDeduction.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha"
+                [(ngModel)]="newDeduction.fecha"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Observaciones</span>
@@ -1574,8 +1589,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
           </div>
           <div class="modal-body">
             <div class="form-group">
-              <span class="label">Fecha<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="newGasto.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha"
+                [(ngModel)]="newGasto.fecha"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Proveedor</span>
@@ -1668,8 +1686,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
               ></app-dropdown>
             </div>
             <div class="form-group">
-              <span class="label">Fecha<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="newAdelanto.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha"
+                [(ngModel)]="newAdelanto.fecha"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">N° Documento</span>
@@ -1751,8 +1772,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
               Registra la fecha en que el proveedor dio su conformidad a esta valorización.
             </p>
             <div class="form-group">
-              <span class="label">Fecha de Conformidad<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="conformidadData.fecha" />
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha de Conformidad"
+                [(ngModel)]="conformidadData.fecha"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Observaciones (opcional)</span>

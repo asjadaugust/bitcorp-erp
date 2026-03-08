@@ -83,12 +83,12 @@ curl http://localhost:9000/deploy-webhook
 
 In the [Cloudflare Zero Trust dashboard](https://one.dash.cloudflare.com) → Networks → Tunnels → your tunnel → Public Hostnames, add:
 
-| Hostname                    | Path              | Service                 |
-| --------------------------- | ----------------- | ----------------------- |
-| `bitcorp.mohammadasjad.com` | `/`               | `http://frontend:80`    |
-| `bitcorp.mohammadasjad.com` | `/api/*`          | `http://backend:3400`   |
-| `bitcorp.mohammadasjad.com` | `/deploy-webhook` | `http://webhook:9000`   |
-| `bitcorp.mohammadasjad.com` | `/pgadmin/*`      | `http://pgadmin:80`     |
+| Hostname                    | Path              | Service               |
+| --------------------------- | ----------------- | --------------------- |
+| `bitcorp.mohammadasjad.com` | `/`               | `http://frontend:80`  |
+| `bitcorp.mohammadasjad.com` | `/api/*`          | `http://backend:3400` |
+| `bitcorp.mohammadasjad.com` | `/deploy-webhook` | `http://webhook:9000` |
+| `bitcorp.mohammadasjad.com` | `/pgadmin/*`      | `http://pgadmin:80`   |
 
 ### 5. Build and start production services
 

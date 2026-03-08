@@ -20,6 +20,7 @@ import {
   AeroButtonComponent,
   AeroInputComponent,
   AeroDropdownComponent,
+  AeroDatePickerComponent,
   DropdownOption,
 } from '../../../../core/design-system';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
@@ -37,6 +38,7 @@ import { TURNO_OPTIONS, WEATHER_OPTIONS } from '../../../../core/constants/parte
     AeroButtonComponent,
     AeroInputComponent,
     AeroDropdownComponent,
+    AeroDatePickerComponent,
     FormContainerComponent,
     FormSectionComponent,
     EdtPanelComponent,

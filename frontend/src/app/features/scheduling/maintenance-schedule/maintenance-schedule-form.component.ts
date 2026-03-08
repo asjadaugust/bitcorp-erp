@@ -10,6 +10,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-maintenance-schedule-form',
@@ -20,6 +21,7 @@ import {
     RouterModule,
     FormContainerComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -122,23 +124,19 @@ import {
           <h3>Fechas y Costos</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label for="fechaProgramada">Fecha Programada</label>
-              <input
-                id="fechaProgramada"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fechaProgramada"
-                class="form-control"
-              />
+                label="Fecha Programada"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="fechaRealizada">Fecha Realizada</label>
-              <input
-                id="fechaRealizada"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fechaRealizada"
-                class="form-control"
-              />
+                label="Fecha Realizada"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">

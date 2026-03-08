@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { SolicitudMaterialService, RequerimientoDetalle } from './solicitud-material.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-requerimiento-form',
@@ -16,6 +16,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
     FormContainerComponent,
     FormSectionComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -44,13 +45,11 @@ import { AeroButtonComponent } from '../../../core/design-system';
           </div>
 
           <div class="form-group">
-            <label for="fecha_requerimiento">Fecha de Requerimiento</label>
-            <input
-              id="fecha_requerimiento"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha de Requerimiento"
               formControlName="fecha_requerimiento"
-              class="form-control"
-            />
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

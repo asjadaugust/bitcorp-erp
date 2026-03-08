@@ -13,6 +13,7 @@ import { FormContainerComponent } from '../../shared/components/form-container/f
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-solicitud-equipo-form',
@@ -25,6 +26,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -62,9 +64,13 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </div>
 
           <div class="form-group">
-            <label class="required">Fecha Requerida</label>
-            <input type="date" class="form-control" formControlName="fecha_requerida" />
-            <div class="error-msg" *ngIf="hasError('fecha_requerida')">Fecha es requerida</div>
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_requerida"
+              [label]="'Fecha Requerida *'"
+              [state]="hasError('fecha_requerida') ? 'error' : 'default'"
+              [error]="hasError('fecha_requerida') ? 'Fecha es requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

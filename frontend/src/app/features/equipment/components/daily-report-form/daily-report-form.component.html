@@ -34,9 +34,13 @@
     <!-- Section A: Informacion General -->
     <app-form-section title="Informacion General" icon="fa-clipboard-list">
       <div class="form-group">
-        <label class="required">Fecha</label>
-        <input type="date" formControlName="fecha" class="form-control" />
-        <div class="error-msg" *ngIf="hasError('fecha')">La fecha es requerida</div>
+        <aero-date-picker
+          [mode]="'single'"
+          formControlName="fecha"
+          [label]="'Fecha *'"
+          [state]="hasError('fecha') ? 'error' : 'default'"
+          [error]="hasError('fecha') ? 'La fecha es requerida' : ''"
+        ></aero-date-picker>
       </div>
 
       <div class="form-group">

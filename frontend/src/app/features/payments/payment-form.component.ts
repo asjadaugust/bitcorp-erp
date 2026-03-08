@@ -25,7 +25,7 @@ import { Valuation } from '../../core/models/valuation.model';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroBadgeComponent } from '../../core/design-system';
+import { AeroBadgeComponent, AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-payment-form',
@@ -39,6 +39,7 @@ import { AeroBadgeComponent } from '../../core/design-system';
     FormContainerComponent,
     FormSectionComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -102,17 +103,13 @@ import { AeroBadgeComponent } from '../../core/design-system';
 
         <app-form-section title="Detalles del Pago" icon="fa-money-bill-transfer" [columns]="2">
           <div class="form-group">
-            <label for="fecha_pago">Fecha de Pago *</label>
-            <input
-              type="date"
-              id="fecha_pago"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha de Pago *"
               formControlName="fecha_pago"
-              class="form-control"
-              [class.invalid]="isFieldInvalid('fecha_pago')"
-            />
-            <div *ngIf="isFieldInvalid('fecha_pago')" class="error-msg">
-              Fecha de pago requerida
-            </div>
+              [state]="isFieldInvalid('fecha_pago') ? 'error' : 'default'"
+              [error]="isFieldInvalid('fecha_pago') ? 'Fecha de pago requerida' : ''"
+            ></aero-date-picker>
           </div>
           <div class="form-group">
             <label for="monto_pagado">Monto Pagado *</label>
@@ -275,13 +272,11 @@ import { AeroBadgeComponent } from '../../core/design-system';
             />
           </div>
           <div class="form-group">
-            <label for="comprobante_fecha">Fecha de Comprobante</label>
-            <input
-              type="date"
-              id="comprobante_fecha"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha de Comprobante"
               formControlName="comprobante_fecha"
-              class="form-control"
-            />
+            ></aero-date-picker>
           </div>
           <div class="form-group">
             <label for="referencia_interna">Referencia Interna</label>

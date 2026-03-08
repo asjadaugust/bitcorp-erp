@@ -22,7 +22,11 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
-import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  AeroDatePickerComponent,
+} from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-form',
@@ -39,6 +43,7 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
     DropdownComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -84,14 +89,13 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
           </div>
 
           <div class="form-group">
-            <label for="fecha_contrato">Fecha de Contrato *</label>
-            <input
-              id="fecha_contrato"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_contrato"
-              class="form-control"
-            />
-            <div class="error-msg" *ngIf="hasError('fecha_contrato')">Fecha es requerida</div>
+              [label]="'Fecha de Contrato *'"
+              [state]="hasError('fecha_contrato') ? 'error' : 'default'"
+              [error]="hasError('fecha_contrato') ? 'Fecha es requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
@@ -147,28 +151,36 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
         <!-- Section 2: Financial & Dates -->
         <app-form-section title="Detalles Financieros y Fechas" icon="fa-dollar-sign">
           <div class="form-group">
-            <label for="fecha_inicio">Fecha de Inicio *</label>
-            <input
-              id="fecha_inicio"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_inicio"
-              class="form-control"
-            />
-            <div class="error-msg" *ngIf="hasError('fecha_inicio')">Fecha de inicio requerida</div>
+              [label]="'Fecha de Inicio *'"
+              [state]="hasError('fecha_inicio') ? 'error' : 'default'"
+              [error]="hasError('fecha_inicio') ? 'Fecha de inicio requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <label for="fecha_fin">Fecha de Fin *</label>
-            <input id="fecha_fin" type="date" formControlName="fecha_fin" class="form-control" />
-            <div class="error-msg" *ngIf="hasError('fecha_fin')">Fecha de fin requerida</div>
-            <div
-              class="error-msg"
-              *ngIf="
-                contractForm.hasError('dateRangeInvalid') && contractForm.get('fecha_fin')?.touched
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_fin"
+              [label]="'Fecha de Fin *'"
+              [state]="
+                hasError('fecha_fin') ||
+                (contractForm.hasError('dateRangeInvalid') &&
+                  contractForm.get('fecha_fin')?.touched)
+                  ? 'error'
+                  : 'default'
               "
-            >
-              La fecha de fin debe ser posterior a la fecha de inicio
-            </div>
+              [error]="
+                hasError('fecha_fin')
+                  ? 'Fecha de fin requerida'
+                  : contractForm.hasError('dateRangeInvalid') &&
+                      contractForm.get('fecha_fin')?.touched
+                    ? 'La fecha de fin debe ser posterior a la fecha de inicio'
+                    : ''
+              "
+            ></aero-date-picker>
           </div>
 
           <div

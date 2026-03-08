@@ -10,7 +10,7 @@ import {
 } from '../../services/administration.service';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
-import { AeroButtonComponent } from '../../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-payment-schedule-form',
@@ -21,6 +21,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     FormContainerComponent,
     FormSectionComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -43,27 +44,25 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     >
       <app-form-section title="Datos de Programación" icon="fa-calendar" [columns]="2">
         <div class="form-group">
-          <label class="required">Fecha de Programación</label>
-          <input
-            type="date"
+          <aero-date-picker
+            [mode]="'single'"
             [(ngModel)]="formData.schedule_date"
             name="schedule_date"
-            class="form-control"
+            label="Fecha de Programación"
+            [required]="true"
             [disabled]="isViewMode"
-            required
-          />
+          ></aero-date-picker>
         </div>
 
         <div class="form-group">
-          <label class="required">Fecha de Pago</label>
-          <input
-            type="date"
+          <aero-date-picker
+            [mode]="'single'"
             [(ngModel)]="formData.payment_date"
             name="payment_date"
-            class="form-control"
+            label="Fecha de Pago"
+            [required]="true"
             [disabled]="isViewMode"
-            required
-          />
+          ></aero-date-picker>
         </div>
 
         <div class="form-group full-width">

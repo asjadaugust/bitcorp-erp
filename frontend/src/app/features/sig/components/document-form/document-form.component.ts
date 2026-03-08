@@ -14,6 +14,7 @@ import {
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-document-form',
@@ -26,6 +27,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     AlertComponent,
     DropdownComponent,
     FormContainerComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -120,14 +122,13 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
             </div>
 
             <div class="form-group">
-              <label for="fechaEmision">Fecha Emisión *</label>
-              <input
-                id="fechaEmision"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
+                label="Fecha Emisión *"
                 formControlName="fechaEmision"
-                class="form-control"
-              />
-              <div class="error-msg" *ngIf="hasError('fechaEmision')">Fecha es requerida</div>
+                [state]="hasError('fechaEmision') ? 'error' : 'default'"
+                [error]="hasError('fechaEmision') ? 'Fecha es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group full-width">

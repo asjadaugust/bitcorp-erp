@@ -27,7 +27,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-equipment-form',
@@ -43,6 +43,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     FormSectionComponent,
     DropdownComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -263,13 +264,11 @@ import { AeroButtonComponent } from '../../core/design-system';
           [columns]="3"
         >
           <div class="form-group">
-            <label for="fecha_venc_soat">SOAT</label>
-            <input
-              id="fecha_venc_soat"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_venc_soat"
-              class="form-control"
-            />
+              label="SOAT"
+            ></aero-date-picker>
             <span
               [class]="
                 'status-badge status-' +
@@ -280,13 +279,11 @@ import { AeroButtonComponent } from '../../core/design-system';
             </span>
           </div>
           <div class="form-group">
-            <label for="fecha_venc_poliza">Póliza TREC</label>
-            <input
-              id="fecha_venc_poliza"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_venc_poliza"
-              class="form-control"
-            />
+              label="Póliza TREC"
+            ></aero-date-picker>
             <span
               [class]="
                 'status-badge status-' +
@@ -297,13 +294,11 @@ import { AeroButtonComponent } from '../../core/design-system';
             </span>
           </div>
           <div class="form-group">
-            <label for="fecha_venc_citv">CITV</label>
-            <input
-              id="fecha_venc_citv"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_venc_citv"
-              class="form-control"
-            />
+              label="CITV"
+            ></aero-date-picker>
             <span
               [class]="
                 'status-badge status-' +
@@ -351,12 +346,11 @@ import { AeroButtonComponent } from '../../core/design-system';
                     ></app-dropdown>
                   </td>
                   <td>
-                    <input
-                      type="date"
+                    <aero-date-picker
+                      [mode]="'single'"
                       [(ngModel)]="doc.expiration_date"
                       [ngModelOptions]="{ standalone: true }"
-                      class="form-control"
-                    />
+                    ></aero-date-picker>
                   </td>
                   <td>
                     <span [class]="'status-badge status-' + getDocumentStatus(doc.expiration_date)">

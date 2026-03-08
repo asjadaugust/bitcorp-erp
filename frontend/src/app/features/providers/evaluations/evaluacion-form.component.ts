@@ -9,7 +9,7 @@ import {
 } from './evaluacion.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
-import { AeroBadgeComponent } from '../../../core/design-system';
+import { AeroBadgeComponent, AeroDatePickerComponent } from '../../../core/design-system';
 
 interface CriterioOption {
   parametro: string;
@@ -32,6 +32,7 @@ interface AspectoGroup {
     FormContainerComponent,
     FormSectionComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -75,16 +76,13 @@ interface AspectoGroup {
           </div>
 
           <div class="form-group">
-            <label for="fecha_evaluacion">Fecha Evaluación *</label>
-            <input
-              id="fecha_evaluacion"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha Evaluación *"
               formControlName="fecha_evaluacion"
-              class="form-control"
-            />
-            <div class="error-msg" *ngIf="hasError('fecha_evaluacion')">
-              Fecha de evaluación es requerida
-            </div>
+              [state]="hasError('fecha_evaluacion') ? 'error' : 'default'"
+              [error]="hasError('fecha_evaluacion') ? 'Fecha de evaluación es requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

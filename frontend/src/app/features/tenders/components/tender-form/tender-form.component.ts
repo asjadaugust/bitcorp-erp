@@ -17,6 +17,7 @@ import { ValidationErrorsComponent } from '../../../../shared/components/validat
 import { AlertComponent } from '../../../../shared/components/alert/alert.component';
 import { DropdownComponent } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-tender-form',
@@ -29,6 +30,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     AlertComponent,
     DropdownComponent,
     FormContainerComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -120,24 +122,22 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
           <h3 class="section-title"><i class="fa-solid fa-calendar-days"></i> Fechas y Estado</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label for="fecha_convocatoria">Fecha Convocatoria</label>
-              <input
-                id="fecha_convocatoria"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fecha_convocatoria"
-                class="form-control"
-              />
+                label="Fecha Convocatoria"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="fecha_presentacion">Fecha Presentación *</label>
-              <input
-                id="fecha_presentacion"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fecha_presentacion"
-                class="form-control"
-              />
-              <div class="error-msg" *ngIf="hasError('fecha_presentacion')">Fecha es requerida</div>
+                label="Fecha Presentación *"
+                [required]="true"
+                [state]="hasError('fecha_presentacion') ? 'error' : 'default'"
+                [error]="hasError('fecha_presentacion') ? 'Fecha es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">

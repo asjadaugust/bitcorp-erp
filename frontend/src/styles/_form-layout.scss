@@ -317,3 +317,10 @@ label.required::after {
     color: var(--grey-500);
     font-size: 12px;
 }
+
+// --------------- Date-picker override ---------------------------------
+// In form contexts date-pickers should fill the grid cell like other inputs,
+// overriding the component's intrinsic max-width: 280px.
+.form-group aero-date-picker {
+    max-width: none;
+}

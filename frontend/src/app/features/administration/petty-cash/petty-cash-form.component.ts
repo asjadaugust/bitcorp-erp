@@ -5,10 +5,17 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { PettyCashService } from './petty-cash.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 @Component({
   selector: 'app-petty-cash-form',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, FormContainerComponent, FormSectionComponent],
+  imports: [
+    CommonModule,
+    ReactiveFormsModule,
+    FormContainerComponent,
+    FormSectionComponent,
+    AeroDatePickerComponent,
+  ],
   template: `
     <app-form-container
       [title]="isEditMode ? 'Editar Caja Chica' : 'Nueva Caja Chica'"
@@ -53,16 +60,14 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
           </div>
 
           <div class="form-group">
-            <label for="fecha_apertura">Fecha de Apertura *</label>
-            <input
-              id="fecha_apertura"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_apertura"
-              class="form-control"
-            />
-            <div class="error-msg" *ngIf="hasError('fecha_apertura')">
-              Fecha de apertura es requerida
-            </div>
+              label="Fecha de Apertura"
+              [required]="true"
+              [state]="hasError('fecha_apertura') ? 'error' : 'default'"
+              [error]="hasError('fecha_apertura') ? 'Fecha de apertura es requerida' : ''"
+            ></aero-date-picker>
           </div>
         </app-form-section>
       </form>

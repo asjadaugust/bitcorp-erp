@@ -14,6 +14,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-accounts-payable-form',
@@ -25,6 +26,7 @@ import {
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -89,33 +91,27 @@ import {
             </div>
 
             <div class="form-group">
-              <label for="fecha_emision">Fecha de Emisión <span class="required">*</span></label>
-              <input
-                id="fecha_emision"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fecha_emision"
-                class="form-control"
-                [class.error]="isFieldInvalid('fecha_emision')"
-              />
-              <div class="error-message" *ngIf="isFieldInvalid('fecha_emision')">
-                La fecha de emisión es requerida
-              </div>
+                label="Fecha de Emisión"
+                [required]="true"
+                [state]="isFieldInvalid('fecha_emision') ? 'error' : 'default'"
+                [error]="isFieldInvalid('fecha_emision') ? 'La fecha de emisión es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="fecha_vencimiento"
-                >Fecha de Vencimiento <span class="required">*</span></label
-              >
-              <input
-                id="fecha_vencimiento"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fecha_vencimiento"
-                class="form-control"
-                [class.error]="isFieldInvalid('fecha_vencimiento')"
-              />
-              <div class="error-message" *ngIf="isFieldInvalid('fecha_vencimiento')">
-                La fecha de vencimiento es requerida
-              </div>
+                label="Fecha de Vencimiento"
+                [required]="true"
+                [state]="isFieldInvalid('fecha_vencimiento') ? 'error' : 'default'"
+                [error]="
+                  isFieldInvalid('fecha_vencimiento') ? 'La fecha de vencimiento es requerida' : ''
+                "
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">

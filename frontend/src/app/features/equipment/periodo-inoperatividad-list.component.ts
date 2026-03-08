@@ -17,7 +17,11 @@ import {
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  AeroDatePickerComponent,
+} from '../../core/design-system';
 
 @Component({
   selector: 'app-periodo-inoperatividad-list',
@@ -32,6 +36,7 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
     FilterBarComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <!-- Standalone page (when accessed via /equipment/inoperatividad) -->
@@ -207,8 +212,11 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
               <strong>{{ selectedPeriodo.fecha_inicio | date: 'dd/MM/yyyy' }}</strong>
             </p>
             <div class="form-group">
-              <span class="label">Fecha de resolución *</span>
-              <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_fin" />
+              <aero-date-picker
+                [mode]="'single'"
+                [(ngModel)]="resolverForm.fecha_fin"
+                [label]="'Fecha de resolución *'"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label">Observaciones</span>

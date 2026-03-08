@@ -5,7 +5,7 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { BankCashService, CuentaCajaBanco, FlujoCajaBancoDetalle } from './bank-cash.service';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../core/design-system';
 import { forkJoin } from 'rxjs';
 
 const CLASIFICACION_OPTIONS = [
@@ -37,6 +37,7 @@ const CLASIFICACION_OPTIONS = [
     FormContainerComponent,
     FormSectionComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -73,13 +74,11 @@ const CLASIFICACION_OPTIONS = [
           </div>
 
           <div class="form-group">
-            <label for="fecha_movimiento">Fecha del Movimiento</label>
-            <input
-              id="fecha_movimiento"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               formControlName="fecha_movimiento"
-              class="form-control"
-            />
+              label="Fecha del Movimiento"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

@@ -17,7 +17,11 @@ import {
 } from '../../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
-import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  AeroDatePickerComponent,
+} from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
@@ -32,6 +36,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
     ActionsContainerComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-page-layout
@@ -134,12 +139,18 @@ import { ConfirmService } from '../../../core/services/confirm.service';
                   />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Fecha Inicio</label>
-                  <input type="date" formControlName="fecha_inicio" class="form-control" />
+                  <aero-date-picker
+                    [mode]="'single'"
+                    formControlName="fecha_inicio"
+                    [label]="'Fecha Inicio'"
+                  ></aero-date-picker>
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Fecha Fin</label>
-                  <input type="date" formControlName="fecha_fin" class="form-control" />
+                  <aero-date-picker
+                    [mode]="'single'"
+                    formControlName="fecha_fin"
+                    [label]="'Fecha Fin'"
+                  ></aero-date-picker>
                 </div>
                 <div class="form-group">
                   <label class="form-label">Numero Contrato</label>

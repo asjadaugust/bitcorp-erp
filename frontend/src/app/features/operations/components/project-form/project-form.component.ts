@@ -8,6 +8,7 @@ import {
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-project-form',
@@ -18,6 +19,7 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
     RouterModule,
     DropdownComponent,
     FormContainerComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -93,15 +95,23 @@ import { FormContainerComponent } from '../../../../shared/components/form-conta
           </h3>
           <div class="section-grid">
             <div class="form-group">
-              <label for="startDate">Fecha Inicio *</label>
-              <input id="startDate" type="date" formControlName="startDate" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('startDate')">Fecha inicio es requerida</div>
+              <aero-date-picker
+                [mode]="'single'"
+                formControlName="startDate"
+                label="Fecha Inicio *"
+                [state]="hasError('startDate') ? 'error' : 'default'"
+                [error]="hasError('startDate') ? 'Fecha inicio es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="endDate">Fecha Fin Estimada *</label>
-              <input id="endDate" type="date" formControlName="endDate" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('endDate')">Fecha fin es requerida</div>
+              <aero-date-picker
+                [mode]="'single'"
+                formControlName="endDate"
+                label="Fecha Fin Estimada *"
+                [state]="hasError('endDate') ? 'error' : 'default'"
+                [error]="hasError('endDate') ? 'Fecha fin es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group full-width">

@@ -15,6 +15,7 @@ import {
 } from '../../../../shared/components/dropdown/dropdown.component';
 import { FormContainerComponent } from '../../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../../shared/components/form-section/form-section.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-incident-form',
@@ -27,6 +28,7 @@ import { FormSectionComponent } from '../../../../shared/components/form-section
     DropdownComponent,
     FormContainerComponent,
     FormSectionComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -59,9 +61,13 @@ import { FormSectionComponent } from '../../../../shared/components/form-section
       <form [formGroup]="form" class="form-grid">
         <app-form-section title="Información del Incidente" icon="fa-triangle-exclamation">
           <div class="form-group">
-            <label class="form-label required">Fecha</label>
-            <input type="date" formControlName="fecha_incidente" class="form-control" />
-            <div class="error-msg" *ngIf="hasError('fecha_incidente')">Fecha es requerida</div>
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_incidente"
+              label="Fecha *"
+              [state]="hasError('fecha_incidente') ? 'error' : 'default'"
+              [error]="hasError('fecha_incidente') ? 'Fecha es requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

@@ -10,6 +10,7 @@ import {
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
 import { ConfirmService } from '../../core/services/confirm.service';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-acta-devolucion-form',
@@ -21,6 +22,7 @@ import { ConfirmService } from '../../core/services/confirm.service';
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -53,15 +55,13 @@ import { ConfirmService } from '../../core/services/confirm.service';
           </div>
 
           <div class="form-group">
-            <label class="form-label required" for="fecha_devolucion">Fecha de Devolucion</label>
-            <input
-              id="fecha_devolucion"
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="form.fecha_devolucion"
               name="fecha_devolucion"
-              required
-            />
+              label="Fecha de Devolucion"
+              [required]="true"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

@@ -9,6 +9,7 @@ import { FormSectionComponent } from '../../shared/components/form-section/form-
 import { FormErrorHandlerService } from '../../core/services/form-error-handler.service';
 
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-maintenance-form',
@@ -20,6 +21,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -88,26 +90,21 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         <!-- Section 2: Execution & Cost -->
         <app-form-section title="Ejecución y Costos" icon="fa-coins">
           <div class="form-group">
-            <label for="start_date">Fecha Programada *</label>
-            <input
-              id="start_date"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha Programada *"
               formControlName="fechaProgramada"
-              class="form-control"
-            />
-            <div class="error-msg" *ngIf="hasError('fechaProgramada')">
-              Fecha programada requerida
-            </div>
+              [state]="hasError('fechaProgramada') ? 'error' : 'default'"
+              [error]="hasError('fechaProgramada') ? 'Fecha programada requerida' : ''"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <label for="end_date">Fecha Realizada</label>
-            <input
-              id="end_date"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha Realizada"
               formControlName="fechaRealizada"
-              class="form-control"
-            />
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

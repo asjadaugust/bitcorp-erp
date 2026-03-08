@@ -16,6 +16,7 @@ import {
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-operator-edit',
@@ -30,6 +31,7 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
     AlertComponent,
     DropdownComponent,
     AeroInputComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -131,11 +133,11 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
           </div>
 
           <div class="form-group">
-            <aero-input
+            <aero-date-picker
+              [mode]="'single'"
               label="Fecha de Ingreso"
-              type="date"
               formControlName="fecha_ingreso"
-            ></aero-input>
+            ></aero-date-picker>
           </div>
         </app-form-section>
 
@@ -150,11 +152,11 @@ import { AeroInputComponent } from '../../core/design-system/input/aero-input.co
           </div>
 
           <div class="form-group">
-            <aero-input
+            <aero-date-picker
+              [mode]="'single'"
               label="Vencimiento"
-              type="date"
               formControlName="vencimiento_licencia"
-            ></aero-input>
+            ></aero-date-picker>
           </div>
         </app-form-section>
       </form>
