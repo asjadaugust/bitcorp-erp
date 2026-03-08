@@ -5,6 +5,7 @@ import { Router, RouterModule } from '@angular/router';
 import { AuthService } from '../../core/services/auth.service';
 import { Role, getRoleName } from '../../core/types/roles';
 import { DashboardApiService, DocumentAlertsSummary } from '../../core/services/dashboard.service';
+import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 
 interface Module {
   id: string;
@@ -26,7 +27,7 @@ interface ModuleCategory {
 @Component({
   selector: 'app-dashboard',
   standalone: true,
-  imports: [CommonModule, FormsModule, RouterModule],
+  imports: [CommonModule, FormsModule, RouterModule, AeroBadgeComponent],
   template: `
     <div class="dashboard-container">
       <div class="dashboard-content">
@@ -50,15 +51,15 @@ interface ModuleCategory {
               <div class="alert-info">
                 <span class="alert-label">Equipos</span>
                 <div class="alert-badges">
-                  <span class="badge badge-red" *ngIf="documentAlerts.equipment.expired > 0">
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.equipment.expired > 0">
                     {{ documentAlerts.equipment.expired }} vencidos
-                  </span>
-                  <span class="badge badge-orange" *ngIf="documentAlerts.equipment.critical > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.equipment.critical > 0">
                     {{ documentAlerts.equipment.critical }} criticos
-                  </span>
-                  <span class="badge badge-yellow" *ngIf="documentAlerts.equipment.warning > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.equipment.warning > 0">
                     {{ documentAlerts.equipment.warning }} por vencer
-                  </span>
+                  </aero-badge>
                 </div>
               </div>
             </div>
@@ -74,15 +75,15 @@ interface ModuleCategory {
               <div class="alert-info">
                 <span class="alert-label">Operadores</span>
                 <div class="alert-badges">
-                  <span class="badge badge-red" *ngIf="documentAlerts.operators.expired > 0">
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.operators.expired > 0">
                     {{ documentAlerts.operators.expired }} vencidos
-                  </span>
-                  <span class="badge badge-orange" *ngIf="documentAlerts.operators.critical > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.operators.critical > 0">
                     {{ documentAlerts.operators.critical }} criticos
-                  </span>
-                  <span class="badge badge-yellow" *ngIf="documentAlerts.operators.warning > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.operators.warning > 0">
                     {{ documentAlerts.operators.warning }} por vencer
-                  </span>
+                  </aero-badge>
                 </div>
               </div>
             </div>
@@ -98,15 +99,15 @@ interface ModuleCategory {
               <div class="alert-info">
                 <span class="alert-label">Contratos</span>
                 <div class="alert-badges">
-                  <span class="badge badge-red" *ngIf="documentAlerts.contracts.expired > 0">
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.contracts.expired > 0">
                     {{ documentAlerts.contracts.expired }} vencidos
-                  </span>
-                  <span class="badge badge-orange" *ngIf="documentAlerts.contracts.critical > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.contracts.critical > 0">
                     {{ documentAlerts.contracts.critical }} criticos
-                  </span>
-                  <span class="badge badge-yellow" *ngIf="documentAlerts.contracts.warning > 0">
+                  </aero-badge>
+                  <aero-badge variant="neutral" *ngIf="documentAlerts.contracts.warning > 0">
                     {{ documentAlerts.contracts.warning }} por vencer
-                  </span>
+                  </aero-badge>
                 </div>
               </div>
             </div>
@@ -236,28 +237,6 @@ interface ModuleCategory {
         display: flex;
         flex-wrap: wrap;
         gap: var(--s-4);
-      }
-
-      .badge {
-        padding: 2px 8px;
-        border-radius: 999px;
-        font-size: 11px;
-        font-weight: 600;
-      }
-
-      .badge-red {
-        background: var(--grey-100);
-        color: var(--grey-900);
-      }
-
-      .badge-orange {
-        background: var(--grey-100);
-        color: var(--grey-900);
-      }
-
-      .badge-yellow {
-        background: var(--grey-100);
-        color: var(--grey-900);
       }
 
       /* Control Panel */

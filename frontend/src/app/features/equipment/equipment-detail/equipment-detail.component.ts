@@ -28,7 +28,11 @@ import {
 } from '../../../core/design-system/data-grid/aero-data-grid.component';
 import { PeriodoInoperatividadListComponent } from '../periodo-inoperatividad-list.component';
 import { AeroTabsComponent } from '../../../shared/components/aero-tabs/aero-tabs.component';
-import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  BreadcrumbItem,
+} from '../../../core/design-system';
 
 @Component({
   selector: 'app-equipment-detail',
@@ -41,6 +45,7 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system
     PeriodoInoperatividadListComponent,
     AeroTabsComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -100,12 +105,11 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system
                 <div class="info-item">
                   <span class="label">Propiedad</span>
                   <div class="value">
-                    <span
-                      class="badge"
-                      [ngClass]="
+                    <aero-badge
+                      [variant]="
                         equipment?.es_propio || equipment?.tipo_proveedor === 'PROPIO'
-                          ? 'badge-propio'
-                          : 'badge-tercero'
+                          ? 'success'
+                          : 'info'
                       "
                     >
                       {{
@@ -113,7 +117,7 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system
                           ? 'Propio'
                           : 'Tercero'
                       }}
-                    </span>
+                    </aero-badge>
                   </div>
                 </div>
               </div>
@@ -514,24 +518,6 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../core/design-system
         font-size: 12px;
         font-weight: 600;
         color: var(--grey-700);
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 6px;
-        padding: 4px 12px;
-        border-radius: 20px;
-        font-size: 0.8rem;
-        font-weight: 600;
-      }
-      .badge-propio {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .badge-tercero {
-        background: var(--primary-50);
-        color: var(--primary-700);
       }
 
       .cat-badge {

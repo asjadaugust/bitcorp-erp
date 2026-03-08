@@ -25,6 +25,7 @@ import { Valuation } from '../../core/models/valuation.model';
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
+import { AeroBadgeComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-payment-form',
@@ -37,6 +38,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
     DropdownComponent,
     FormContainerComponent,
     FormSectionComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-form-container
@@ -91,13 +93,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
             </div>
             <div class="summary-row">
               <span>Estado:</span>
-              <span
-                [class]="
-                  'badge badge-' + paymentService.getSummaryStatusColor(paymentSummary.estado_pago)
-                "
-              >
+              <aero-badge [variant]="getSummaryBadgeVariant(paymentSummary.estado_pago)">
                 {{ paymentService.getSummaryStatusLabel(paymentSummary.estado_pago) }}
-              </span>
+              </aero-badge>
             </div>
           </div>
         </app-form-section>
@@ -344,28 +342,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         color: var(--accent-500);
       }
 
-      .badge {
-        padding: 4px 10px;
-        border-radius: var(--radius-md);
-        font-size: 0.75rem;
-        font-weight: 600;
-      }
-
-      .badge-success {
-        background: var(--semantic-blue-100);
-        color: var(--primary-900);
-      }
-
-      .badge-warning {
-        background: var(--grey-100);
-        color: var(--grey-900);
-      }
-
-      .badge-secondary {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-
       .warning-message {
         color: var(--accent-500);
         font-size: 0.875rem;
@@ -607,6 +583,15 @@ export class PaymentFormComponent implements OnInit {
         },
       });
     }
+  }
+
+  getSummaryBadgeVariant(status: string): string {
+    const map: Record<string, string> = {
+      SIN_PAGOS: 'neutral',
+      PAGO_PARCIAL: 'warning',
+      PAGO_COMPLETO: 'info',
+    };
+    return map[status] || 'neutral';
   }
 
   cancel() {

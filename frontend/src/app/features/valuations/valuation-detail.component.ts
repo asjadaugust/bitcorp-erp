@@ -21,7 +21,7 @@ import {
   AuditInfo,
   NotFoundConfig,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent, BreadcrumbItem } from '../../core/design-system';
 import { AeroTabsComponent } from '../../shared/components/aero-tabs/aero-tabs.component';
 import { TabItem } from '../../shared/components/page-layout/page-layout.component';
 import { CombustiblePanelComponent } from '../equipment/associations/combustible-panel.component';
@@ -38,6 +38,7 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
     AeroTabsComponent,
     AeroDataGridComponent,
     CombustiblePanelComponent,
@@ -441,20 +442,15 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
                           {{ payment.monto | currency: 'USD' }}
                         </td>
                         <td>
-                          <span
-                            class="badge"
-                            [class.badge-success]="payment.estado === 'APROBADO'"
-                            [class.badge-warning]="payment.estado === 'PENDIENTE'"
-                            [class.badge-danger]="payment.estado === 'RECHAZADO'"
-                            [class.badge-secondary]="payment.estado === 'PAGADO'"
-                            >{{ payment.estado }}</span
-                          >
+                          <aero-badge [variant]="getEstadoVariant(payment.estado)">{{
+                            payment.estado
+                          }}</aero-badge>
                         </td>
                         <td>
                           @if (payment.conciliado) {
-                            <span class="conciliado-badge badge badge-success">
+                            <aero-badge variant="success">
                               <i class="fa-solid fa-check"></i> Conciliado
-                            </span>
+                            </aero-badge>
                           }
                         </td>
                       </tr>
@@ -498,9 +494,9 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
               emptyIcon="fa-layer-group"
             ></aero-data-grid>
             <ng-template #estadoBadgeTpl let-row>
-              <span class="badge" [ngClass]="'badge-' + getStatusBadgeClass(row['estado'] + '')">{{
+              <aero-badge [variant]="getEstadoVariant(row['estado'] + '')">{{
                 row['estado']
-              }}</span>
+              }}</aero-badge>
             </ng-template>
           </section>
         }
@@ -693,13 +689,11 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
               ></aero-button>
             </ng-template>
             <ng-template #tipoOpTpl let-row>
-              <span
-                class="badge"
-                [class.badge-warning]="row['tipo_operacion'] === 'ADELANTO'"
-                [class.badge-success]="row['tipo_operacion'] === 'AMORTIZACION'"
+              <aero-badge
+                [variant]="row['tipo_operacion'] === 'AMORTIZACION' ? 'success' : 'warning'"
               >
                 {{ row['tipo_operacion'] }}
-              </span>
+              </aero-badge>
             </ng-template>
           </section>
         }
@@ -2153,38 +2147,6 @@ import { EdtPanelComponent } from '../equipment/associations/edt-panel.component
       }
       .text-right {
         text-align: right;
-      }
-
-      .badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 500;
-        display: inline-block;
-        white-space: nowrap;
-      }
-
-      .badge-secondary {
-        background: var(--grey-100);
-        color: var(--grey-700);
-      }
-      .badge-success {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .badge-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-      .badge-danger {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-
-      .conciliado-badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
       }
 
       .empty-state-payments {
@@ -4065,6 +4027,15 @@ export class ValuationDetailComponent implements OnInit {
     if (['APROBADO', 'PAGADO'].includes(estado)) return 'success';
     if (['PENDIENTE', 'EN_REVISION', 'VALIDADO', 'BORRADOR'].includes(estado)) return 'warning';
     return 'danger';
+  }
+
+  getEstadoVariant(estado: string): string {
+    if (estado === 'APROBADO') return 'success';
+    if (estado === 'PENDIENTE') return 'warning';
+    if (estado === 'RECHAZADO') return 'error';
+    if (estado === 'PAGADO') return 'neutral';
+    if (['EN_REVISION', 'VALIDADO', 'BORRADOR'].includes(estado)) return 'warning';
+    return 'neutral';
   }
 
   onParteRowClick(row: Record<string, unknown>): void {

@@ -10,7 +10,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-reports',
@@ -21,6 +21,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     AeroDataGridComponent,
     DropdownComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <div class="reports-container">
@@ -126,11 +127,9 @@ import { AeroButtonComponent } from '../../core/design-system';
         ></aero-data-grid>
 
         <ng-template #movementTypeTemplate let-row>
-          <span
-            [class]="'badge ' + (row.tipo_movimiento === 'IN' ? 'badge-success' : 'badge-warning')"
-          >
+          <aero-badge [variant]="row.tipo_movimiento === 'IN' ? 'info' : 'neutral'">
             {{ row.tipo_movimiento }}
-          </span>
+          </aero-badge>
         </ng-template>
       </div>
 
@@ -226,21 +225,6 @@ import { AeroButtonComponent } from '../../core/design-system';
         display: flex;
         justify-content: center;
         padding: 48px;
-      }
-
-      .badge {
-        padding: 4px 8px;
-        border-radius: 4px;
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .badge-success {
-        background: var(--semantic-blue-100);
-        color: var(--primary-900);
-      }
-      .badge-warning {
-        background: var(--grey-100);
-        color: var(--grey-900);
       }
     `,
   ],

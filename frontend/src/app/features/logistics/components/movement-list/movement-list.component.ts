@@ -25,7 +25,7 @@ import {
   StatItem,
 } from '../../../../shared/components/stats-grid/stats-grid.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent } from '../../../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-movement-list',
@@ -41,6 +41,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
     ActionsContainerComponent,
     StatsGridComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-page-layout
@@ -105,14 +106,17 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       </ng-template>
 
       <ng-template #typeTemplate let-row>
-        <span
-          [class]="
-            row.tipo_movimiento === 'entrada' ? 'badge badge-status-in' : 'badge badge-status-out'
+        <aero-badge
+          [variant]="
+            row.tipo_movimiento === 'entrada'
+              ? 'info'
+              : row.tipo_movimiento === 'transferencia'
+                ? 'primary'
+                : 'neutral'
           "
-          [class.badge-primary]="row.tipo_movimiento === 'transferencia'"
         >
           {{ row.tipo_movimiento | uppercase }}
-        </span>
+        </aero-badge>
       </ng-template>
 
       <ng-template #documentTemplate let-row>
@@ -124,7 +128,7 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       </ng-template>
 
       <ng-template #itemsTemplate let-row>
-        <span class="badge badge-items">{{ row.items_count || 0 }} items</span>
+        <aero-badge variant="neutral">{{ row.items_count || 0 }} items</aero-badge>
       </ng-template>
 
       <!-- Actions Template -->
@@ -151,25 +155,6 @@ import { AeroButtonComponent } from '../../../../core/design-system';
       .font-semibold {
         font-weight: 600;
       }
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: var(--type-label-size);
-        font-weight: 500;
-      }
-      .badge-items {
-        background: var(--grey-200);
-        color: var(--grey-900);
-      }
-      .badge-status-in {
-        background: var(--semantic-blue-100);
-        color: var(--semantic-success);
-      }
-      .badge-status-out {
-        background: var(--grey-100);
-        color: var(--semantic-error);
-      }
-
       .action-buttons {
         display: flex;
         justify-content: flex-end;
@@ -203,7 +188,7 @@ export class MovementListComponent implements OnInit {
   };
 
   breadcrumbs = [
-    { label: 'Inicio', url: '/app' },
+    { label: 'Inicio', url: '/dashboard' },
     { label: 'Logística', url: '/logistics' },
     { label: 'Movimientos' },
   ];

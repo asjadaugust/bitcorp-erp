@@ -12,7 +12,11 @@ import {
   DataGridColumn,
 } from '../../../../core/design-system/data-grid/aero-data-grid.component';
 import { ConfirmService } from '../../../../core/services/confirm.service';
-import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  BreadcrumbItem,
+} from '../../../../core/design-system';
 
 @Component({
   selector: 'app-movement-detail',
@@ -23,6 +27,7 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-sys
     EntityDetailShellComponent,
     AeroDataGridComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-entity-detail-shell
@@ -95,13 +100,9 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../../../core/design-sys
               <div class="info-item">
                 <span class="label">Tipo</span>
                 <p>
-                  <span
-                    class="badge"
-                    [class.badge-primary]="movement.tipo_movimiento === 'entrada'"
-                    [class.badge-danger]="movement.tipo_movimiento === 'salida'"
-                  >
+                  <aero-badge [variant]="movement.tipo_movimiento === 'entrada' ? 'info' : 'error'">
                     {{ movement.tipo_movimiento | uppercase }}
-                  </span>
+                  </aero-badge>
                 </p>
               </div>
               <div class="info-item">
