@@ -83,15 +83,17 @@ jobs:
       - run: flutter pub get
         working-directory: mobile
       - name: Set up release signing
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
         run: |
-          echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 --decode > mobile/android/release-keystore.jks
-          cat > mobile/android/key.properties << EOF
-          storePassword=${{ secrets.KEYSTORE_PASSWORD }}
-          keyPassword=${{ secrets.KEY_PASSWORD }}
-          keyAlias=${{ secrets.KEY_ALIAS }}
-          storeFile=release-keystore.jks
-          EOF
-      - run: flutter build apk --release --dart-define=API_URL=https://bitcorp.mohammadasjad.com/api
+          echo "${KEYSTORE_BASE64}" | base64 --decode > mobile/android/release-keystore.jks
+          printf 'storePassword=%s\nkeyPassword=%s\nkeyAlias=%s\nstoreFile=release-keystore.jks\n' \
+            "${KEYSTORE_PASSWORD}" "${KEY_PASSWORD}" "${KEY_ALIAS}" \
+            > mobile/android/key.properties
+      - run: flutter build apk --release --dart-define=API_URL=https://bitcorp.app/api
         working-directory: mobile
       - name: Upload APK to release
         env:
@@ -117,5 +119,5 @@ jobs:
             -H "Content-Type: application/json" \
             -H "X-Hub-Signature-256: sha256=${SIGNATURE}" \
             -d "${PAYLOAD}" \
-            "https://bitcorp.mohammadasjad.com/deploy-webhook" \
+            "https://bitcorp.app/deploy-webhook" \
             --max-time 10 || echo "Webhook delivery failed (server may be offline)"
