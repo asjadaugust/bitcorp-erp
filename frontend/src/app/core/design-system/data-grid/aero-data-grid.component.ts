@@ -62,7 +62,7 @@ export interface DataGridSortEvent {
         </button>
 
         <div *ngIf="columnChooserOpen" class="aero-datagrid__col-chooser-dropdown">
-          <label *ngFor="let col of columns" class="aero-datagrid__col-chooser-item">
+          <label *ngFor="let col of uniqueColumns" class="aero-datagrid__col-chooser-item">
             <input
               type="checkbox"
               [checked]="isColumnVisible(col.key)"
@@ -1359,6 +1359,16 @@ export class AeroDataGridComponent implements OnChanges, OnDestroy {
   // ─── Inputs ───
   @Input() columns: DataGridColumn[] = [];
   @Input() data: Record<string, unknown>[] = [];
+
+  /** Deduplicated columns for the column chooser (first occurrence wins). */
+  get uniqueColumns(): DataGridColumn[] {
+    const seen = new Set<string>();
+    return this.columns.filter((col) => {
+      if (seen.has(col.key)) return false;
+      seen.add(col.key);
+      return true;
+    });
+  }
   @Input() loading = false;
   @Input() dense = true;
   @Input() showColumnChooser = false;

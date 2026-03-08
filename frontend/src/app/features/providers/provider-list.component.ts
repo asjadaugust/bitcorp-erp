@@ -288,7 +288,6 @@ export class ProviderListComponent implements OnInit {
       },
     },
     // Legacy hidden columns (from 307_Proveedor.tbl_C07001_Proveedor)
-    { key: 'ruc', label: 'RUC', hidden: true, sortable: true, filterable: true },
     { key: 'direccion', label: 'Dirección', hidden: true },
     { key: 'telefono', label: 'Teléfono', hidden: true },
     { key: 'email', label: 'Email', hidden: true },

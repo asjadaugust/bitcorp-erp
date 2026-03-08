@@ -342,7 +342,6 @@ export class EquipmentListComponent implements OnInit {
 
     // ─── Legacy columns (hidden by default, visible via column chooser) ───
     { key: 'serie', label: 'N\u00B0 Serie', type: 'text', hidden: true, sortable: true },
-    { key: 'placa', label: 'Placa', type: 'text', hidden: true, sortable: true },
     {
       key: 'anio_fabricacion',
       label: 'A\u00F1o Fab.',
@@ -351,7 +350,6 @@ export class EquipmentListComponent implements OnInit {
       hidden: true,
       sortable: true,
     },
-    { key: 'proveedor_nombre', label: 'Proveedor', type: 'text', hidden: true, sortable: true },
     { key: 'contrato_codigo', label: 'Contrato', type: 'text', hidden: true, sortable: true },
     { key: 'potencia', label: 'Potencia', type: 'text', hidden: true, sortable: true },
     { key: 'peso', label: 'Peso', type: 'number', hidden: true, sortable: true },

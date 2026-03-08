@@ -115,7 +115,6 @@ export class CostCenterListComponent implements OnInit {
     { key: 'nombre', label: 'Nombre', type: 'text', sortable: true, filterable: true },
     { key: 'presupuesto', label: 'Presupuesto', type: 'currency', format: 'PEN', sortable: true },
     // Legacy hidden columns
-    { key: 'presupuesto', label: 'Presupuesto', type: 'currency', hidden: true },
     { key: 'gasto_acumulado', label: 'Gasto Acum.', type: 'currency', hidden: true },
     { key: 'saldo_disponible', label: 'Saldo Disp.', type: 'currency', hidden: true },
     { key: 'responsable', label: 'Responsable', hidden: true },
