@@ -109,6 +109,11 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
+  // Skip pgAdmin requests — handled by separate container via Cloudflare tunnel
+  if (url.pathname.startsWith('/pgadmin')) {
+    return;
+  }
+
   // API requests: only intercept POST /api/reports for offline sync
   if (url.pathname.startsWith('/api')) {
     if (request.method === 'POST' && url.pathname === '/api/reports') {
