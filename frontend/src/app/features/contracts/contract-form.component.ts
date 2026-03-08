@@ -22,7 +22,7 @@ import {
 } from '../../core/services/form-error-handler.service';
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-form',
@@ -38,6 +38,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     AlertComponent,
     DropdownComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <app-form-container
@@ -124,20 +125,12 @@ import { AeroButtonComponent } from '../../core/design-system';
             ></app-dropdown>
             <div class="error-msg" *ngIf="hasError('modalidad')">Modalidad es requerida</div>
             <div class="modalidad-badges" *ngIf="contractForm.get('modalidad')?.value">
-              <span
-                class="badge"
-                [class.badge--success]="isOperadorIncluido()"
-                [class.badge--neutral]="!isOperadorIncluido()"
-              >
+              <aero-badge [variant]="isOperadorIncluido() ? 'success' : 'neutral'">
                 {{ isOperadorIncluido() ? 'Incluye Operador' : 'Sin Operador' }}
-              </span>
-              <span
-                class="badge"
-                [class.badge--success]="isMotorIncluido()"
-                [class.badge--neutral]="!isMotorIncluido()"
-              >
+              </aero-badge>
+              <aero-badge [variant]="isMotorIncluido() ? 'success' : 'neutral'">
                 {{ isMotorIncluido() ? 'Incluye Combustible' : 'Sin Combustible' }}
-              </span>
+              </aero-badge>
             </div>
           </div>
 
@@ -460,25 +453,6 @@ import { AeroButtonComponent } from '../../core/design-system';
         display: flex;
         gap: var(--s-8);
         margin-top: var(--s-4);
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        padding: 2px 10px;
-        border-radius: var(--radius-md);
-        font-size: 12px;
-        font-weight: 500;
-      }
-
-      .badge--success {
-        background: var(--semantic-green-100);
-        color: var(--semantic-green-700);
-      }
-
-      .badge--neutral {
-        background: var(--grey-100);
-        color: var(--grey-600);
       }
 
       .plazo-calculated {

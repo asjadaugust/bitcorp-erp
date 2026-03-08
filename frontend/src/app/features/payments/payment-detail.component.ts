@@ -8,14 +8,20 @@ import {
   EntityDetailHeader,
   AuditInfo,
 } from '../../shared/components/entity-detail';
-import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent, BreadcrumbItem } from '../../core/design-system';
 import { ConfirmService } from '../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-payment-detail',
   standalone: true,
-  imports: [CommonModule, RouterModule, EntityDetailShellComponent, AeroButtonComponent],
+  imports: [
+    CommonModule,
+    RouterModule,
+    EntityDetailShellComponent,
+    AeroButtonComponent,
+    AeroBadgeComponent,
+  ],
   template: `
     <app-entity-detail-shell
       [loading]="loading"
@@ -94,21 +100,17 @@ import { MatSnackBar } from '@angular/material/snack-bar';
               <div class="info-item">
                 <span class="label">Método de Pago</span>
                 <p>
-                  <span class="badge badge-secondary">
+                  <aero-badge variant="neutral">
                     {{ paymentService.getPaymentMethodLabel(payment?.metodo_pago || '') }}
-                  </span>
+                  </aero-badge>
                 </p>
               </div>
               <div class="info-item">
                 <span class="label">Estado</span>
                 <p>
-                  <span
-                    [class]="
-                      'badge badge-' + paymentService.getPaymentStatusColor(payment?.estado || '')
-                    "
-                  >
+                  <aero-badge [variant]="getStatusBadgeVariant(payment?.estado || '')">
                     {{ paymentService.getPaymentStatusLabel(payment?.estado || '') }}
-                  </span>
+                  </aero-badge>
                 </p>
               </div>
               <div class="info-item">
@@ -177,9 +179,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
                 <div class="info-item">
                   <span class="label">Estado</span>
                   <p>
-                    <span class="badge badge-success">
+                    <aero-badge variant="info">
                       <i class="fa-solid fa-check-double"></i> Conciliado
-                    </span>
+                    </aero-badge>
                   </p>
                 </div>
                 <div class="info-item" *ngIf="payment?.fecha_conciliacion">
@@ -406,31 +408,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         color: var(--grey-600);
         line-height: 1.6;
       }
-
-      .badge {
-        padding: var(--s-4) var(--s-8);
-        border-radius: var(--s-4);
-        font-size: var(--type-label-size);
-        font-weight: 600;
-        display: inline-block;
-      }
-
-      .badge-success {
-        background-color: var(--semantic-blue-100);
-        color: var(--primary-900);
-      }
-      .badge-warning {
-        background-color: var(--grey-100);
-        color: var(--grey-900);
-      }
-      .badge-danger {
-        background-color: var(--grey-100);
-        color: var(--grey-900);
-      }
-      .badge-secondary {
-        background-color: var(--grey-200);
-        color: var(--grey-900);
-      }
     `,
   ],
 })
@@ -562,6 +539,16 @@ export class PaymentDetailComponent implements OnInit {
           });
         }
       });
+  }
+
+  getStatusBadgeVariant(status: string): string {
+    const map: Record<string, string> = {
+      PENDIENTE: 'warning',
+      CONFIRMADO: 'info',
+      RECHAZADO: 'error',
+      ANULADO: 'neutral',
+    };
+    return map[status] || 'neutral';
   }
 
   viewValuation() {

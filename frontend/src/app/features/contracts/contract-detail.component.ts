@@ -905,23 +905,6 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
         font-weight: 500;
       }
 
-      .badge {
-        padding: 2px 8px;
-        border-radius: 4px;
-        font-size: 11px;
-        font-weight: 600;
-      }
-
-      .badge-success {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-
-      .badge-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-
       /* Lifecycle modals */
       .modal {
         position: fixed;
@@ -1165,12 +1148,6 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
         display: flex;
         gap: 8px;
         flex-wrap: wrap;
-
-        .badge-danger {
-          background: var(--semantic-red-50);
-          color: var(--grey-900);
-          border-color: var(--semantic-red-200);
-        }
       }
 
       .alert-success {

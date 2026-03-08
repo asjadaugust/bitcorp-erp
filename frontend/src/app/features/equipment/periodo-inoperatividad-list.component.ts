@@ -17,7 +17,7 @@ import {
 import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-periodo-inoperatividad-list',
@@ -31,6 +31,7 @@ import { AeroButtonComponent } from '../../core/design-system';
     AeroDataGridComponent,
     FilterBarComponent,
     AeroButtonComponent,
+    AeroBadgeComponent,
   ],
   template: `
     <!-- Standalone page (when accessed via /equipment/inoperatividad) -->
@@ -126,17 +127,17 @@ import { AeroButtonComponent } from '../../core/design-system';
 
     <ng-template #excedeTemplate let-row>
       @if (row.excede_plazo) {
-        <span class="badge badge-danger">
+        <aero-badge variant="error">
           <i class="fa-solid fa-triangle-exclamation"></i> Excedido
-        </span>
+        </aero-badge>
       } @else if (row.estado === 'ACTIVO') {
-        <span class="badge badge-warning">
+        <aero-badge variant="warning">
           {{ row.dias_restantes }} día{{ row.dias_restantes !== 1 ? 's' : '' }} restante{{
             row.dias_restantes !== 1 ? 's' : ''
           }}
-        </span>
+        </aero-badge>
       } @else {
-        <span class="badge badge-success">Dentro del plazo</span>
+        <aero-badge variant="success">Dentro del plazo</aero-badge>
       }
     </ng-template>
 
@@ -316,32 +317,6 @@ import { AeroButtonComponent } from '../../core/design-system';
           align-items: center;
           gap: 8px;
         }
-      }
-
-      .badge {
-        display: inline-flex;
-        align-items: center;
-        gap: 4px;
-        padding: 3px 8px;
-        border-radius: var(--radius-sm);
-        font-size: 12px;
-        font-weight: 600;
-      }
-      .badge-danger {
-        background: var(--semantic-red-50);
-        color: var(--grey-900);
-      }
-      .badge-warning {
-        background: var(--semantic-yellow-50);
-        color: var(--grey-900);
-      }
-      .badge-success {
-        background: var(--semantic-green-50);
-        color: var(--primary-900);
-      }
-      .badge-secondary {
-        background: var(--grey-100);
-        color: var(--grey-600);
       }
 
       .dias-danger {
