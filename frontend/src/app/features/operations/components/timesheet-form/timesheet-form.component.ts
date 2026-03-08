@@ -16,6 +16,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-timesheet-form',
@@ -28,6 +29,7 @@ import {
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -93,9 +95,13 @@ import {
             </div>
 
             <div class="form-group">
-              <label for="weekStart">Inicio de Semana *</label>
-              <input id="weekStart" type="date" formControlName="week_start" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('week_start')">Fecha inicio es requerida</div>
+              <aero-date-picker
+                [mode]="'single'"
+                formControlName="week_start"
+                label="Inicio de Semana *"
+                [state]="hasError('week_start') ? 'error' : 'default'"
+                [error]="hasError('week_start') ? 'Fecha inicio es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
@@ -124,8 +130,11 @@ import {
               </div>
               <div class="entry-fields">
                 <div class="form-group">
-                  <span class="label">Fecha</span>
-                  <input type="date" formControlName="date" class="form-control" />
+                  <aero-date-picker
+                    [mode]="'single'"
+                    formControlName="date"
+                    label="Fecha"
+                  ></aero-date-picker>
                 </div>
                 <div class="form-group">
                   <span class="label">Horas Regulares</span>

@@ -28,6 +28,7 @@ import {
   AeroInputComponent,
   AeroBadgeComponent,
   AeroDropdownComponent,
+  AeroDatePickerComponent,
   DropdownOption as AeroDropdownOption,
 } from '../../../core/design-system';
 import { TURNO_OPTIONS, WEATHER_OPTIONS } from '../../../core/constants/parte-diario.constants';
@@ -46,6 +47,7 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
     AeroInputComponent,
     AeroBadgeComponent,
     AeroDropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -82,14 +84,14 @@ import { BreadcrumbItem } from '../../../core/design-system/breadcrumbs/aero-bre
         <!-- General Info Section -->
         <app-form-section title="Informacion General" icon="fa-circle-info" [columns]="2">
           <div class="form-group">
-            <label class="form-label required">Fecha</label>
-            <input
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha"
               formControlName="fecha"
-              class="form-control"
-              [readonly]="isViewMode"
-            />
-            <div class="error-msg" *ngIf="getFieldError('fecha')">{{ getFieldError('fecha') }}</div>
+              [disabled]="isViewMode"
+              [state]="getFieldError('fecha') ? 'error' : 'default'"
+              [error]="getFieldError('fecha') || ''"
+            ></aero-date-picker>
           </div>
           <aero-dropdown
             formControlName="proyecto_id"

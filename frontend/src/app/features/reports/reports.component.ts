@@ -1,15 +1,16 @@
 import { Component, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { FormsModule } from '@angular/forms';
 import { ReportingService } from '../../core/services/reporting.service';
 import {
   AeroDataGridComponent,
   DataGridColumn,
 } from '../../core/design-system/data-grid/aero-data-grid.component';
+import { DropdownOption } from '../../shared/components/dropdown/dropdown.component';
 import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../shared/components/dropdown/dropdown.component';
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
+import { PageLayoutComponent } from '../../shared/components/page-layout/page-layout.component';
 import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-system';
 
 @Component({
@@ -17,54 +18,32 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     AeroDataGridComponent,
-    DropdownComponent,
+    FilterBarComponent,
+    PageLayoutComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
   ],
   template: `
-    <div class="reports-container">
-      <div class="header">
-        <h1>Reportes y Analítica</h1>
-        <p>Generación de reportes operativos y financieros</p>
-      </div>
-
-      <div class="card filter-card">
-        <div class="filters-grid">
-          <div class="filter-group">
-            <span class="label">Tipo de Reporte</span>
-            <app-dropdown [(ngModel)]="selectedReport" [options]="reportOptions"></app-dropdown>
-          </div>
-
-          <div class="filter-group">
-            <span class="label">Fecha Inicio</span>
-            <input type="date" [(ngModel)]="startDate" class="form-control" />
-          </div>
-
-          <div class="filter-group">
-            <span class="label">Fecha Fin</span>
-            <input type="date" [(ngModel)]="endDate" class="form-control" />
-          </div>
-
-          <div class="filter-actions">
-            <aero-button
-              variant="primary"
-              iconLeft="fa-table"
-              [loading]="loading"
-              (clicked)="generateReport()"
-              >Ver Datos</aero-button
-            >
-            <aero-button
-              variant="primary"
-              iconLeft="fa-file-excel"
-              [loading]="loading"
-              (clicked)="exportExcel()"
-              >Excel</aero-button
-            >
-          </div>
+    <app-page-layout title="Reportes y Analítica" icon="fa-chart-bar">
+      <app-filter-bar [config]="filterConfig" (filterChange)="onFilterChange($event)">
+        <div actions>
+          <aero-button
+            variant="primary"
+            iconLeft="fa-table"
+            [loading]="loading"
+            (clicked)="generateReport()"
+            >Ver Datos</aero-button
+          >
+          <aero-button
+            variant="primary"
+            iconLeft="fa-file-excel"
+            [loading]="loading"
+            (clicked)="exportExcel()"
+            >Excel</aero-button
+          >
         </div>
-      </div>
+      </app-filter-bar>
 
       <div *ngIf="loading" class="loading">
         <div class="spinner"></div>
@@ -146,79 +125,26 @@ import { AeroButtonComponent, AeroBadgeComponent } from '../../core/design-syste
           [dense]="true"
         ></aero-data-grid>
       </div>
-    </div>
+    </app-page-layout>
   `,
   styles: [
     `
-      .reports-container {
-        padding: 0;
+      .report-result {
+        margin-top: var(--s-16);
       }
-      .header {
-        margin-bottom: 24px;
-      }
-      .header h1 {
-        font-size: 24px;
+
+      .report-result h3 {
+        font-size: 18px;
         color: var(--primary-900);
-        margin: 0;
-      }
-      .header p {
-        color: var(--grey-500);
-        margin: 4px 0 0;
+        margin: 0 0 var(--s-16);
       }
 
-      .filter-card {
-        background: var(--grey-100);
-        padding: 24px;
-        border-radius: 12px;
+      .card {
+        background: var(--neutral-0);
+        padding: var(--s-24);
+        border-radius: var(--s-12);
         box-shadow: var(--shadow-sm);
-        margin-bottom: 24px;
-      }
-
-      .filters-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: 16px;
-        align-items: end;
-      }
-
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 8px;
-      }
-      label {
-        font-size: 14px;
-        font-weight: 500;
-        color: var(--grey-700);
-      }
-
-      .form-control,
-      .form-select {
-        padding: 10px;
-        border: 1px solid var(--grey-300);
-        border-radius: 6px;
-        width: 100%;
-      }
-
-      .filter-actions {
-        display: flex;
-        gap: 12px;
-      }
-
-      .data-table {
-        width: 100%;
-        border-collapse: collapse;
-      }
-      .data-table th,
-      .data-table td {
-        padding: 12px;
-        text-align: left;
-        border-bottom: 1px solid var(--grey-200);
-      }
-      .data-table th {
-        background: var(--grey-50);
-        font-weight: 600;
-        color: var(--grey-700);
+        border: 1px solid var(--grey-200);
       }
 
       .loading {
@@ -246,6 +172,18 @@ export class ReportsComponent {
     { label: 'Historial de Mantenimiento', value: 'maintenance' },
     { label: 'Movimientos de Inventario', value: 'inventory' },
     { label: 'Timesheet de Operadores', value: 'timesheet' },
+  ];
+
+  filterConfig: FilterConfig[] = [
+    {
+      key: 'reportType',
+      label: 'Tipo de Reporte',
+      type: 'select',
+      value: 'utilization',
+      options: this.reportOptions,
+    },
+    { key: 'startDate', label: 'Fecha Inicio', type: 'date', value: this.startDate },
+    { key: 'endDate', label: 'Fecha Fin', type: 'date', value: this.endDate },
   ];
 
   columnsUtilization: DataGridColumn[] = [
@@ -286,6 +224,12 @@ export class ReportsComponent {
     { key: 'total_hours', label: 'Horas Totales', type: 'text', sortable: true },
     { key: 'overtime_hours', label: 'Horas Extras', type: 'text' },
   ];
+
+  onFilterChange(filters: Record<string, unknown>) {
+    this.selectedReport = (filters['reportType'] as string) || 'utilization';
+    this.startDate = (filters['startDate'] as string) || '';
+    this.endDate = (filters['endDate'] as string) || '';
+  }
 
   generateReport() {
     if (!this.startDate || !this.endDate) return;

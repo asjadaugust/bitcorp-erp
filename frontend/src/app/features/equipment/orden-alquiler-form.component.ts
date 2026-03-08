@@ -6,6 +6,7 @@ import { OrdenAlquilerService, OrdenAlquiler } from '../../core/services/orden-a
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-orden-alquiler-form',
@@ -17,6 +18,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -106,34 +108,31 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
         <!-- Sección: Fechas -->
         <app-form-section title="Fechas" icon="fa-calendar-days">
           <div class="form-group">
-            <label class="form-label required">Fecha de Orden</label>
-            <input
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="form.fecha_orden"
               name="fecha_orden"
-              required
-            />
+              label="Fecha de Orden"
+              [required]="true"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Fecha Inicio Estimada</label>
-            <input
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="form.fecha_inicio_estimada"
               name="fecha_inicio_estimada"
-            />
+              label="Fecha Inicio Estimada"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Fecha Fin Estimada</label>
-            <input
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="form.fecha_fin_estimada"
               name="fecha_fin_estimada"
-            />
+              label="Fecha Fin Estimada"
+            ></aero-date-picker>
           </div>
         </app-form-section>
 

@@ -26,7 +26,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
-import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
+import { AeroDatePickerComponent } from '../../core/design-system/date-picker/aero-date-picker.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
 import { AeroButtonComponent } from '../../core/design-system/button/aero-button.component';
 
@@ -42,7 +42,7 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     StatsGridComponent,
     PageLayoutComponent,
     DropdownComponent,
-    AeroInputComponent,
+    AeroDatePickerComponent,
     AeroCardComponent,
     AeroButtonComponent,
   ],
@@ -56,18 +56,18 @@ type TabId = 'flota' | 'utilizacion' | 'combustible';
     >
       <!-- Standardized Period Selector -->
       <div actions class="period-controls-wrapper">
-        <aero-input
-          type="date"
+        <aero-date-picker
+          [mode]="'single'"
           label="Desde"
           [(ngModel)]="fechaInicio"
-          (ngModelChange)="onPeriodChange()"
-        ></aero-input>
-        <aero-input
-          type="date"
+          (dateChange)="onPeriodChange()"
+        ></aero-date-picker>
+        <aero-date-picker
+          [mode]="'single'"
           label="Hasta"
           [(ngModel)]="fechaFin"
-          (ngModelChange)="onPeriodChange()"
-        ></aero-input>
+          (dateChange)="onPeriodChange()"
+        ></aero-date-picker>
       </div>
 
       <!-- ══════════════════════════ TAB: FLOTA ══════════════════════════ -->

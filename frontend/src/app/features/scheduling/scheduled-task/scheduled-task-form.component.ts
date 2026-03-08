@@ -18,6 +18,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-scheduled-task-form',
@@ -30,6 +31,7 @@ import {
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -101,9 +103,13 @@ import {
           <h3>Detalles de la Tarea</h3>
           <div class="section-grid">
             <div class="form-group">
-              <label for="date">Fecha Programada *</label>
-              <input type="date" id="date" formControlName="fechaInicio" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('fechaInicio')">Fecha es requerida</div>
+              <aero-date-picker
+                [mode]="'single'"
+                formControlName="fechaInicio"
+                label="Fecha Programada *"
+                [state]="hasError('fechaInicio') ? 'error' : 'default'"
+                [error]="hasError('fechaInicio') ? 'Fecha es requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">

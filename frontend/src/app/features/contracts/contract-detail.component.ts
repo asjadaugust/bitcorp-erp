@@ -37,7 +37,11 @@ import {
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
-import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroDatePickerComponent,
+  BreadcrumbItem,
+} from '../../core/design-system';
 
 @Component({
   selector: 'app-contract-detail',
@@ -51,6 +55,7 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
     EntityDetailShellComponent,
     EntityDetailSidebarCardComponent,
     AeroButtonComponent,
+    AeroDatePickerComponent,
     DropdownComponent,
     AeroBadgeComponent,
   ],
@@ -658,8 +663,11 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
               ></textarea>
             </div>
             <div class="form-group">
-              <span class="label">Fecha de Resolución<span class="required">*</span></span>
-              <input type="date" class="form-control" [(ngModel)]="resolverForm.fecha_resolucion" />
+              <aero-date-picker
+                [mode]="'single'"
+                [(ngModel)]="resolverForm.fecha_resolucion"
+                [label]="'Fecha de Resolución *'"
+              ></aero-date-picker>
             </div>
             <div class="form-group">
               <span class="label"
@@ -759,12 +767,11 @@ import { AeroButtonComponent, BreadcrumbItem } from '../../core/design-system';
             }
             @if (liquidationCheck?.puede_liquidar) {
               <div class="form-group">
-                <span class="label">Fecha de Liquidación<span class="required">*</span></span>
-                <input
-                  type="date"
-                  class="form-control"
+                <aero-date-picker
+                  [mode]="'single'"
                   [(ngModel)]="liquidarForm.fecha_liquidacion"
-                />
+                  [label]="'Fecha de Liquidación *'"
+                ></aero-date-picker>
               </div>
               <div class="form-group">
                 <span class="label"

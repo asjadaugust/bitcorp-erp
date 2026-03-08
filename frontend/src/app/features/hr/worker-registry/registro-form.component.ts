@@ -11,6 +11,7 @@ import { ValidationErrorsComponent } from '../../../shared/components/validation
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-registro-form',
@@ -22,6 +23,7 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
     AlertComponent,
     FormContainerComponent,
     FormSectionComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -74,13 +76,19 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
           </div>
 
           <div class="form-group">
-            <label class="form-label">Fecha Ingreso *</label>
-            <input type="date" formControlName="fecha_ingreso" class="form-control" />
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_ingreso"
+              [label]="'Fecha Ingreso *'"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <label class="form-label">Fecha Cese</label>
-            <input type="date" formControlName="fecha_cese" class="form-control" />
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_cese"
+              [label]="'Fecha Cese'"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

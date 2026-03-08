@@ -1,7 +1,6 @@
 import { Component, OnInit, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterModule, Router } from '@angular/router';
-import { FormsModule } from '@angular/forms';
 import { ScheduledTaskService } from '../../../core/services/scheduled-task.service';
 import { ScheduledTask } from '../../../core/models/scheduled-task.model';
 import { ExcelExportService } from '../../../core/services/excel-export.service';
@@ -14,10 +13,11 @@ import {
   TabItem,
 } from '../../../shared/components/page-layout/page-layout.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
+import { DropdownOption } from '../../../shared/components/dropdown/dropdown.component';
 import {
-  DropdownComponent,
-  DropdownOption,
-} from '../../../shared/components/dropdown/dropdown.component';
+  FilterBarComponent,
+  FilterConfig,
+} from '../../../shared/components/filter-bar/filter-bar.component';
 
 import {
   AeroCardComponent,
@@ -32,12 +32,11 @@ import { MatSnackBar } from '@angular/material/snack-bar';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     PageLayoutComponent,
     ActionsContainerComponent,
     ExportDropdownComponent,
-    DropdownComponent,
+    FilterBarComponent,
     AeroCardComponent,
     AeroButtonComponent,
   ],
@@ -64,37 +63,10 @@ import { MatSnackBar } from '@angular/material/snack-bar';
         >
       </app-actions-container>
 
-      <div class="filters-card">
-        <div class="filters-grid">
-          <div class="filter-group">
-            <span class="label">Estado</span>
-            <app-dropdown
-              [(ngModel)]="filters.estado"
-              [options]="statusOptions"
-              (ngModelChange)="loadTasks()"
-              [placeholder]="'Todos'"
-            ></app-dropdown>
-          </div>
-          <div class="filter-group">
-            <span class="label">Fecha Desde</span>
-            <input
-              type="date"
-              [(ngModel)]="filters.fechaDesde"
-              (change)="loadTasks()"
-              class="form-control"
-            />
-          </div>
-          <div class="filter-group">
-            <span class="label">Fecha Hasta</span>
-            <input
-              type="date"
-              [(ngModel)]="filters.fechaHasta"
-              (change)="loadTasks()"
-              class="form-control"
-            />
-          </div>
-        </div>
-      </div>
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
 
       <!-- Error State -->
       <div *ngIf="error" class="error-container">
@@ -282,6 +254,12 @@ export class ScheduledTaskListComponent implements OnInit {
     { label: 'Completado', value: 'completed' },
   ];
 
+  filterConfig: FilterConfig[] = [
+    { key: 'estado', label: 'Estado', type: 'select', value: '', options: this.statusOptions },
+    { key: 'fechaDesde', label: 'Fecha Desde', type: 'date', value: '' },
+    { key: 'fechaHasta', label: 'Fecha Hasta', type: 'date', value: '' },
+  ];
+
   ngOnInit() {
     this.loadTasks();
   }
@@ -306,6 +284,13 @@ export class ScheduledTaskListComponent implements OnInit {
         this.loading = false;
       },
     });
+  }
+
+  onFilterChange(filters: Record<string, unknown>) {
+    this.filters.estado = (filters['estado'] as string) || '';
+    this.filters.fechaDesde = (filters['fechaDesde'] as string) || '';
+    this.filters.fechaHasta = (filters['fechaHasta'] as string) || '';
+    this.loadTasks();
   }
 
   createTask() {

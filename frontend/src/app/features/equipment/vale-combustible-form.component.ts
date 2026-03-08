@@ -12,6 +12,7 @@ import {
   DropdownComponent,
   DropdownOption,
 } from '../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-vale-combustible-form',
@@ -23,6 +24,7 @@ import {
     FormContainerComponent,
     FormSectionComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -92,15 +94,14 @@ import {
         <!-- Section 2: Datos del Vale -->
         <app-form-section title="Datos del Vale" icon="fa-receipt">
           <div class="form-group">
-            <label class="form-label required" for="fecha">Fecha</label>
-            <input
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
+              label="Fecha"
               [(ngModel)]="form.fecha"
               name="fecha"
               required
               data-testid="input-fecha"
-            />
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

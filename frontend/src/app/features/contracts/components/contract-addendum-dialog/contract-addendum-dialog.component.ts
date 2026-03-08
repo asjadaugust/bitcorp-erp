@@ -3,11 +3,12 @@ import { CommonModule } from '@angular/common';
 import { FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatDialogRef, MAT_DIALOG_DATA } from '@angular/material/dialog';
 import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/aero-dialog.component';
+import { AeroDatePickerComponent } from '../../../../core/design-system';
 
 @Component({
   selector: 'app-contract-addendum-dialog',
   standalone: true,
-  imports: [CommonModule, ReactiveFormsModule, AeroDialogComponent],
+  imports: [CommonModule, ReactiveFormsModule, AeroDialogComponent, AeroDatePickerComponent],
   template: `
     <app-aero-dialog
       title="Crear Adenda"
@@ -36,25 +37,39 @@ import { AeroDialogComponent } from '../../../../shared/components/aero-dialog/a
 
         <div class="section-grid">
           <div class="form-group">
-            <span class="label">Fecha de Adenda *</span>
-            <input type="date" formControlName="addendumDate" class="form-control" />
-            <div
-              class="error-msg"
-              *ngIf="form.get('addendumDate')?.touched && form.get('addendumDate')?.invalid"
-            >
-              La fecha de adenda es requerida
-            </div>
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="addendumDate"
+              [label]="'Fecha de Adenda *'"
+              [state]="
+                form.get('addendumDate')?.touched && form.get('addendumDate')?.invalid
+                  ? 'error'
+                  : 'default'
+              "
+              [error]="
+                form.get('addendumDate')?.touched && form.get('addendumDate')?.invalid
+                  ? 'La fecha de adenda es requerida'
+                  : ''
+              "
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
-            <span class="label">Nueva Fecha de Fin *</span>
-            <input type="date" formControlName="newEndDate" class="form-control" />
-            <div
-              class="error-msg"
-              *ngIf="form.get('newEndDate')?.touched && form.get('newEndDate')?.invalid"
-            >
-              La nueva fecha de fin es requerida
-            </div>
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="newEndDate"
+              [label]="'Nueva Fecha de Fin *'"
+              [state]="
+                form.get('newEndDate')?.touched && form.get('newEndDate')?.invalid
+                  ? 'error'
+                  : 'default'
+              "
+              [error]="
+                form.get('newEndDate')?.touched && form.get('newEndDate')?.invalid
+                  ? 'La nueva fecha de fin es requerida'
+                  : ''
+              "
+            ></aero-date-picker>
           </div>
 
           <div class="form-group full-width">

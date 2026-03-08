@@ -22,7 +22,7 @@ import {
 } from '../../../core/design-system/badge/aero-badge.component';
 import { ConfirmService } from '../../../core/services/confirm.service';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../core/design-system';
 
 interface InspectionFormData {
   plantillaId?: number;
@@ -48,6 +48,7 @@ interface InspectionFormData {
     PageCardComponent,
     AeroInputComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-page-layout
@@ -132,12 +133,12 @@ interface InspectionFormData {
       <app-page-card *ngIf="currentStep === 2" title="Datos Iniciales de la Inspección">
         <div class="form-grid">
           <div class="form-group">
-            <aero-input
-              label="Fecha de Inspección"
-              type="date"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="formData.fechaInspeccion"
+              label="Fecha de Inspección"
               [required]="true"
-            ></aero-input>
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

@@ -14,6 +14,7 @@ import { ValidationErrorsComponent } from '../../../shared/components/validation
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-reporte-form',
@@ -25,6 +26,7 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
     AlertComponent,
     FormContainerComponent,
     FormSectionComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -96,8 +98,11 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
 
         <app-form-section title="Datos del Evento" icon="fa-calendar-day">
           <div class="form-group">
-            <label class="form-label">Fecha Evento</label>
-            <input type="date" formControlName="fecha_evento" class="form-control" />
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_evento"
+              label="Fecha Evento"
+            ></aero-date-picker>
           </div>
           <div class="form-group">
             <label class="form-label">Lugar</label>

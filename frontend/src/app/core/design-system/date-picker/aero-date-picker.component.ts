@@ -14,9 +14,16 @@ export type DatePickerMode = 'single' | 'range';
 export type DatePickerHeight = '44' | '56';
 export type DatePickerState = 'default' | 'error';
 
+export type DateValueFormat = 'date' | 'string';
+
 export interface DateRange {
   start: Date | null;
   end: Date | null;
+}
+
+export interface DateRangeString {
+  start: string | null;
+  end: string | null;
 }
 
 @Component({
@@ -63,23 +70,34 @@ export interface DateRange {
       </div>
 
       <!-- Calendar Popup -->
-      <div *ngIf="isOpen" class="aero-date-picker__popup">
+      <div *ngIf="isOpen" class="aero-date-picker__popup" (click)="$event.stopPropagation()">
         <!-- Header -->
         <div class="aero-date-picker__header">
-          <button type="button" class="aero-date-picker__nav" (click)="prevMonth()" tabindex="-1">
-            <i class="fa-solid fa-chevron-left"></i>
-          </button>
           <button
             type="button"
             class="aero-date-picker__month-year"
             (click)="toggleView()"
             tabindex="-1"
           >
-            {{ monthNames[viewMonth] }} {{ viewYear }}
+            <ng-container *ngIf="currentView === 'day'"
+              >{{ monthNames[viewMonth] }} {{ viewYear }}</ng-container
+            >
+            <ng-container *ngIf="currentView === 'month'">{{ viewYear }}</ng-container>
+            <ng-container *ngIf="currentView === 'year'">{{ yearRangeLabel }}</ng-container>
+            <i
+              class="fa-solid"
+              [class.fa-chevron-down]="currentView === 'day'"
+              [class.fa-chevron-up]="currentView !== 'day'"
+            ></i>
           </button>
-          <button type="button" class="aero-date-picker__nav" (click)="nextMonth()" tabindex="-1">
-            <i class="fa-solid fa-chevron-right"></i>
-          </button>
+          <div class="aero-date-picker__nav-group">
+            <button type="button" class="aero-date-picker__nav" (click)="prevMonth()" tabindex="-1">
+              <i class="fa-solid fa-chevron-left"></i>
+            </button>
+            <button type="button" class="aero-date-picker__nav" (click)="nextMonth()" tabindex="-1">
+              <i class="fa-solid fa-chevron-right"></i>
+            </button>
+          </div>
         </div>
 
         <!-- Year Grid -->
@@ -156,6 +174,8 @@ export interface DateRange {
       :host {
         display: block;
         position: relative;
+        max-width: 280px;
+        min-width: 160px;
       }
 
       .aero-date-picker {
@@ -181,9 +201,9 @@ export interface DateRange {
       .aero-date-picker__field {
         display: flex;
         align-items: center;
-        border: 1px solid var(--grey-600);
+        border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
-        background-color: var(--grey-100);
+        background-color: var(--neutral-0);
         padding: 0 var(--s-12);
         gap: var(--s-8);
         cursor: pointer;
@@ -200,7 +220,7 @@ export interface DateRange {
       }
 
       .aero-date-picker__field:hover {
-        border-color: var(--primary-900);
+        border-color: var(--primary-300);
       }
 
       .aero-date-picker__field--focused {
@@ -213,7 +233,7 @@ export interface DateRange {
       }
 
       .aero-date-picker--disabled .aero-date-picker__field {
-        background-color: var(--grey-100);
+        background-color: var(--grey-200);
         border-color: var(--grey-500);
         cursor: not-allowed;
       }
@@ -244,7 +264,7 @@ export interface DateRange {
       }
 
       .aero-date-picker__clear {
-        color: var(--grey-600);
+        color: var(--grey-500);
         font-size: 14px;
         cursor: pointer;
         flex-shrink: 0;
@@ -271,12 +291,12 @@ export interface DateRange {
         left: 0;
         z-index: 1000;
         margin-top: var(--s-4);
-        background-color: var(--grey-100);
-        border: 1px solid var(--grey-300);
+        background-color: white;
+        border: none;
         border-radius: var(--radius-md);
-        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
-        padding: var(--s-16);
-        width: 308px;
+        box-shadow: 0 12px 48px rgba(0, 0, 0, 0.16);
+        padding: var(--s-12);
+        width: 280px;
       }
 
       /* Header */
@@ -284,15 +304,15 @@ export interface DateRange {
         display: flex;
         align-items: center;
         justify-content: space-between;
-        margin-bottom: var(--s-12);
+        margin-bottom: var(--s-8);
       }
 
       .aero-date-picker__nav {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 32px;
-        height: 32px;
+        width: 28px;
+        height: 28px;
         border: none;
         background: none;
         border-radius: var(--radius-sm);
@@ -303,6 +323,11 @@ export interface DateRange {
 
       .aero-date-picker__nav:hover {
         background-color: var(--grey-200);
+      }
+
+      .aero-date-picker__nav-group {
+        display: flex;
+        align-items: center;
       }
 
       .aero-date-picker__month-year {
@@ -321,6 +346,11 @@ export interface DateRange {
         background-color: var(--grey-200);
       }
 
+      .aero-date-picker__month-year i {
+        font-size: 12px;
+        margin-left: var(--s-4);
+      }
+
       /* Weekday headers */
       .aero-date-picker__weekdays {
         display: grid;
@@ -332,11 +362,11 @@ export interface DateRange {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 32px;
+        height: 28px;
         font-family: var(--font-text);
         font-size: var(--type-bodySmall-size);
         font-weight: 500;
-        color: var(--grey-600);
+        color: var(--grey-500);
         text-transform: uppercase;
       }
 
@@ -351,12 +381,12 @@ export interface DateRange {
         display: flex;
         align-items: center;
         justify-content: center;
-        width: 44px;
-        height: 44px;
+        width: 36px;
+        height: 36px;
         border: none;
         background: none;
         font-family: var(--font-text);
-        font-size: var(--type-body-size);
+        font-size: 13px;
         color: var(--primary-900);
         cursor: pointer;
         border-radius: var(--radius-full, 9999px);
@@ -407,19 +437,19 @@ export interface DateRange {
       .aero-date-picker__year-grid {
         display: grid;
         grid-template-columns: repeat(4, 1fr);
-        gap: var(--s-4);
+        gap: 8px;
       }
 
       .aero-date-picker__year-cell {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 44px;
+        height: 36px;
         border: none;
         background: none;
         font-family: var(--font-text);
         font-size: var(--type-body-size);
-        color: var(--primary-900);
+        color: var(--primary-500);
         cursor: pointer;
         border-radius: var(--radius-sm);
       }
@@ -436,20 +466,20 @@ export interface DateRange {
       /* Month grid */
       .aero-date-picker__month-grid {
         display: grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: var(--s-4);
+        grid-template-columns: repeat(4, 1fr);
+        gap: 8px;
       }
 
       .aero-date-picker__month-cell {
         display: flex;
         align-items: center;
         justify-content: center;
-        height: 44px;
+        height: 36px;
         border: none;
         background: none;
         font-family: var(--font-text);
         font-size: var(--type-body-size);
-        color: var(--primary-900);
+        color: var(--primary-500);
         cursor: pointer;
         border-radius: var(--radius-sm);
       }
@@ -467,8 +497,8 @@ export interface DateRange {
       .aero-date-picker__footer {
         display: flex;
         justify-content: center;
-        margin-top: var(--s-8);
-        padding-top: var(--s-8);
+        margin-top: var(--s-4);
+        padding-top: var(--s-4);
         border-top: 1px solid var(--grey-200);
       }
 
@@ -501,14 +531,18 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
   @Input() disabled = false;
   @Input() minDate: Date | null = null;
   @Input() maxDate: Date | null = null;
+  @Input() valueFormat: DateValueFormat = 'string';
 
-  @Output() dateChange = new EventEmitter<Date | DateRange | null>();
+  @Output() dateChange = new EventEmitter<Date | DateRange | DateRangeString | string | null>();
 
   isOpen = false;
   currentView: 'day' | 'month' | 'year' = 'day';
   viewMonth = new Date().getMonth();
   viewYear = new Date().getFullYear();
   hoveredDate: Date | null = null;
+
+  calendarCells: CalendarCell[] = [];
+  yearRange: number[] = [];
 
   private selectedDate: Date | null = null;
   private rangeStart: Date | null = null;
@@ -571,7 +605,7 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
     return this.selectedDate ? this.formatDate(this.selectedDate) : '';
   }
 
-  get calendarCells(): CalendarCell[] {
+  private buildCalendarCells(): void {
     const cells: CalendarCell[] = [];
     const firstDay = new Date(this.viewYear, this.viewMonth, 1);
     const lastDay = new Date(this.viewYear, this.viewMonth + 1, 0);
@@ -600,12 +634,17 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
       cells.push(this.createCell(date, false));
     }
 
-    return cells;
+    this.calendarCells = cells;
   }
 
-  get yearRange(): number[] {
-    const startYear = this.viewYear - (this.viewYear % 12);
-    return Array.from({ length: 12 }, (_, i) => startYear + i);
+  private buildYearRange(): void {
+    const startYear = this.viewYear - (this.viewYear % 20);
+    this.yearRange = Array.from({ length: 20 }, (_, i) => startYear + i);
+  }
+
+  get yearRangeLabel(): string {
+    const start = this.viewYear - (this.viewYear % 20);
+    return `${start} - ${start + 19}`;
   }
 
   toggleCalendar(): void {
@@ -617,6 +656,8 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
         this.viewMonth = this.selectedDate.getMonth();
         this.viewYear = this.selectedDate.getFullYear();
       }
+      this.buildCalendarCells();
+      this.buildYearRange();
     }
   }
 
@@ -632,48 +673,56 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
 
   prevMonth(): void {
     if (this.currentView === 'year') {
-      this.viewYear -= 12;
+      this.viewYear -= 20;
+      this.buildYearRange();
     } else {
       this.viewMonth--;
       if (this.viewMonth < 0) {
         this.viewMonth = 11;
         this.viewYear--;
       }
+      this.buildCalendarCells();
     }
   }
 
   nextMonth(): void {
     if (this.currentView === 'year') {
-      this.viewYear += 12;
+      this.viewYear += 20;
+      this.buildYearRange();
     } else {
       this.viewMonth++;
       if (this.viewMonth > 11) {
         this.viewMonth = 0;
         this.viewYear++;
       }
+      this.buildCalendarCells();
     }
   }
 
   selectYear(year: number): void {
     this.viewYear = year;
     this.currentView = 'month';
+    this.buildYearRange();
   }
 
   selectMonth(month: number): void {
     this.viewMonth = month;
     this.currentView = 'day';
+    this.buildCalendarCells();
   }
 
   selectDate(date: Date): void {
     if (this.mode === 'single') {
       this.selectedDate = date;
-      this.onChange(date);
-      this.dateChange.emit(date);
+      const emitValue = this.valueFormat === 'string' ? this.toISODate(date) : date;
+      this.onChange(emitValue);
+      this.dateChange.emit(emitValue);
       this.isOpen = false;
     } else {
       if (!this.rangeStart || (this.rangeStart && this.rangeEnd)) {
         this.rangeStart = date;
         this.rangeEnd = null;
+        this.buildCalendarCells();
       } else {
         if (date < this.rangeStart) {
           this.rangeEnd = this.rangeStart;
@@ -681,9 +730,15 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
         } else {
           this.rangeEnd = date;
         }
-        const range: DateRange = { start: this.rangeStart, end: this.rangeEnd };
-        this.onChange(range);
-        this.dateChange.emit(range);
+        const emitValue =
+          this.valueFormat === 'string'
+            ? {
+                start: this.rangeStart ? this.toISODate(this.rangeStart) : null,
+                end: this.rangeEnd ? this.toISODate(this.rangeEnd) : null,
+              }
+            : { start: this.rangeStart, end: this.rangeEnd };
+        this.onChange(emitValue);
+        this.dateChange.emit(emitValue);
         this.isOpen = false;
       }
     }
@@ -692,6 +747,7 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
   onDayHover(date: Date): void {
     if (this.mode === 'range' && this.rangeStart && !this.rangeEnd) {
       this.hoveredDate = date;
+      this.buildCalendarCells();
     }
   }
 
@@ -700,6 +756,8 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
     this.viewMonth = today.getMonth();
     this.viewYear = today.getFullYear();
     this.currentView = 'day';
+    this.buildCalendarCells();
+    this.buildYearRange();
   }
 
   clearValue(event: Event): void {
@@ -707,22 +765,27 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
     this.selectedDate = null;
     this.rangeStart = null;
     this.rangeEnd = null;
-    this.onChange(null);
-    this.dateChange.emit(null);
+    this.hoveredDate = null;
+    const emitValue = this.valueFormat === 'string' ? '' : null;
+    this.onChange(emitValue);
+    this.dateChange.emit(emitValue);
+    this.buildCalendarCells();
   }
 
   writeValue(value: unknown): void {
     if (this.mode === 'single') {
-      this.selectedDate = value instanceof Date ? value : null;
+      this.selectedDate = this.parseToDate(value);
       if (this.selectedDate) {
         this.viewMonth = this.selectedDate.getMonth();
         this.viewYear = this.selectedDate.getFullYear();
       }
     } else {
-      const range = value as DateRange;
-      this.rangeStart = range?.start ?? null;
-      this.rangeEnd = range?.end ?? null;
+      const range = value as DateRange | DateRangeString;
+      this.rangeStart = this.parseToDate(range?.start);
+      this.rangeEnd = this.parseToDate(range?.end);
     }
+    this.buildCalendarCells();
+    this.buildYearRange();
   }
 
   registerOnChange(fn: (value: unknown) => void): void {
@@ -791,6 +854,22 @@ export class AeroDatePickerComponent implements ControlValueAccessor {
       a.getMonth() === b.getMonth() &&
       a.getFullYear() === b.getFullYear()
     );
+  }
+
+  private parseToDate(value: unknown): Date | null {
+    if (value instanceof Date) return value;
+    if (typeof value === 'string' && value) {
+      const [y, m, d] = value.split('-').map(Number);
+      if (y && m && d) return new Date(y, m - 1, d);
+    }
+    return null;
+  }
+
+  private toISODate(date: Date): string {
+    const y = date.getFullYear();
+    const m = String(date.getMonth() + 1).padStart(2, '0');
+    const d = String(date.getDate()).padStart(2, '0');
+    return `${y}-${m}-${d}`;
   }
 
   private formatDate(date: Date): string {

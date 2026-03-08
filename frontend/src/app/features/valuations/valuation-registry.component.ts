@@ -1,7 +1,6 @@
 import { Component, inject, OnInit } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { FormsModule } from '@angular/forms';
 import { Router, RouterModule } from '@angular/router';
 import { ValuationService } from '../../core/services/valuation.service';
 import { ExcelExportService } from '../../core/services/excel-export.service';
@@ -11,9 +10,11 @@ import {
   ExportFormat,
 } from '../../shared/components/export-dropdown/export-dropdown.component';
 import { ActionsContainerComponent } from '../../shared/components/actions-container/actions-container.component';
-import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import {
+  FilterBarComponent,
+  FilterConfig,
+} from '../../shared/components/filter-bar/filter-bar.component';
 import { AeroCardComponent } from '../../core/design-system/card/aero-card.component';
-import { AeroInputComponent } from '../../core/design-system/input/aero-input.component';
 import {
   AeroDataGridComponent,
   DataGridColumn,
@@ -25,14 +26,12 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
   standalone: true,
   imports: [
     CommonModule,
-    FormsModule,
     RouterModule,
     PageLayoutComponent,
     ExportDropdownComponent,
     ActionsContainerComponent,
-    DropdownComponent,
+    FilterBarComponent,
     AeroCardComponent,
-    AeroInputComponent,
     AeroDataGridComponent,
   ],
   template: `
@@ -73,43 +72,10 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
       </div>
 
       <!-- Filters -->
-      <aero-card variant="outlined">
-        <div class="filter-grid">
-          <aero-input
-            label="Periodo Desde"
-            type="month"
-            [(ngModel)]="filters['periodo_desde']"
-            (ngModelChange)="loadRegistry()"
-            inputId="filter-periodo-desde"
-          ></aero-input>
-
-          <aero-input
-            label="Periodo Hasta"
-            type="month"
-            [(ngModel)]="filters['periodo_hasta']"
-            (ngModelChange)="loadRegistry()"
-            inputId="filter-periodo-hasta"
-          ></aero-input>
-
-          <div class="filter-group">
-            <span class="aero-label">Estado</span>
-            <app-dropdown
-              [(ngModel)]="filters['estado']"
-              [options]="statusOptions"
-              [placeholder]="'Todos'"
-              (ngModelChange)="loadRegistry()"
-            ></app-dropdown>
-          </div>
-
-          <aero-input
-            label="Proveedor"
-            placeholder="RUC o razón social..."
-            [(ngModel)]="filters['proveedor']"
-            (input)="onProveedorSearch()"
-            inputId="filter-proveedor"
-          ></aero-input>
-        </div>
-      </aero-card>
+      <app-filter-bar
+        [config]="filterConfig"
+        (filterChange)="onFilterChange($event)"
+      ></app-filter-bar>
 
       <!-- Data Table -->
       <aero-data-grid
@@ -200,26 +166,6 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
         min-width: 20px;
       }
 
-      .filter-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-        gap: var(--s-16);
-        align-items: flex-start;
-      }
-
-      .filter-group {
-        display: flex;
-        flex-direction: column;
-        gap: 4px;
-      }
-
-      .aero-label {
-        font-size: var(--type-bodySmall-size);
-        font-weight: 500;
-        color: var(--primary-900);
-        margin-bottom: var(--s-4);
-      }
-
       .cell-group {
         display: flex;
         flex-direction: column;
@@ -272,9 +218,6 @@ import { EQUIPMENT_TABS } from '../equipment/equipment-tabs';
         background: var(--grey-700);
       }
 
-      /* Ensure status badges in table (provided by AeroTable classes mostly, but we set custom classes in config) */
-      /* We rely on global status classes or AeroTable's default behavior, but we used custom classes in previous impl. */
-      /* Let's define them here to be safe if AeroTable falls back to class strings */
       .status-badge {
         padding: 4px 10px;
         border-radius: 20px;
@@ -437,6 +380,19 @@ export class ValuationRegistryComponent implements OnInit {
     { value: 'PAGADO', label: 'Pagado' },
   ];
 
+  filterConfig: FilterConfig[] = [
+    {
+      key: 'proveedor',
+      label: 'Proveedor',
+      type: 'text',
+      placeholder: 'RUC o razón social...',
+      value: '',
+    },
+    { key: 'periodo_desde', label: 'Periodo Desde', type: 'date', value: '' },
+    { key: 'periodo_hasta', label: 'Periodo Hasta', type: 'date', value: '' },
+    { key: 'estado', label: 'Estado', type: 'select', value: '', options: this.statusOptions },
+  ];
+
   ngOnInit(): void {
     this.loadRegistry();
   }
@@ -457,6 +413,20 @@ export class ValuationRegistryComponent implements OnInit {
     });
   }
 
+  onFilterChange(filters: Record<string, unknown>) {
+    this.filters['periodo_desde'] = (filters['periodo_desde'] as string) || '';
+    this.filters['periodo_hasta'] = (filters['periodo_hasta'] as string) || '';
+    this.filters['estado'] = (filters['estado'] as string) || '';
+    this.filters['proveedor'] = (filters['proveedor'] as string) || '';
+    this.filters['page'] = 1;
+
+    // Debounce to handle rapid text input
+    clearTimeout(this.searchTimeout);
+    this.searchTimeout = setTimeout(() => {
+      this.loadRegistry();
+    }, 400);
+  }
+
   onPageChange(page: number): void {
     this.filters['page'] = page;
     this.loadRegistry();
@@ -473,14 +443,6 @@ export class ValuationRegistryComponent implements OnInit {
     this.filters['sort_dir'] = event.direction || '';
     this.filters['page'] = 1;
     this.loadRegistry();
-  }
-
-  onProveedorSearch(): void {
-    clearTimeout(this.searchTimeout);
-    this.searchTimeout = setTimeout(() => {
-      this.filters['page'] = 1;
-      this.loadRegistry();
-    }, 400);
   }
 
   viewDetail(row: any): void {

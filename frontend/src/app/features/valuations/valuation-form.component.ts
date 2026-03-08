@@ -18,6 +18,7 @@ import {
 import { ValidationErrorsComponent } from '../../shared/components/validation-errors/validation-errors.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
 import { DropdownComponent } from '../../shared/components/dropdown/dropdown.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-valuation-form',
@@ -29,6 +30,7 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
     ValidationErrorsComponent,
     AlertComponent,
     DropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -108,20 +110,23 @@ import { DropdownComponent } from '../../shared/components/dropdown/dropdown.com
             </div>
 
             <div class="form-group">
-              <label for="fechaInicio">Fecha Inicio del Periodo *</label>
-              <input
-                id="fechaInicio"
-                type="date"
+              <aero-date-picker
+                [mode]="'single'"
                 formControlName="fechaInicio"
-                class="form-control"
-              />
-              <div class="error-msg" *ngIf="hasError('fechaInicio')">Fecha de inicio requerida</div>
+                [label]="'Fecha Inicio del Periodo *'"
+                [state]="hasError('fechaInicio') ? 'error' : 'default'"
+                [error]="hasError('fechaInicio') ? 'Fecha de inicio requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">
-              <label for="fechaFin">Fecha Fin del Periodo *</label>
-              <input id="fechaFin" type="date" formControlName="fechaFin" class="form-control" />
-              <div class="error-msg" *ngIf="hasError('fechaFin')">Fecha de fin requerida</div>
+              <aero-date-picker
+                [mode]="'single'"
+                formControlName="fechaFin"
+                [label]="'Fecha Fin del Periodo *'"
+                [state]="hasError('fechaFin') ? 'error' : 'default'"
+                [error]="hasError('fechaFin') ? 'Fecha de fin requerida' : ''"
+              ></aero-date-picker>
             </div>
 
             <div class="form-group">

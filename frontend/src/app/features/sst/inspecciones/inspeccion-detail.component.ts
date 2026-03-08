@@ -17,7 +17,11 @@ import {
 } from '../../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../../shared/components/page-card/page-card.component';
 import { ActionsContainerComponent } from '../../../shared/components/actions-container/actions-container.component';
-import { AeroButtonComponent, AeroBadgeComponent } from '../../../core/design-system';
+import {
+  AeroButtonComponent,
+  AeroBadgeComponent,
+  AeroDatePickerComponent,
+} from '../../../core/design-system';
 import { ConfirmService } from '../../../core/services/confirm.service';
 
 @Component({
@@ -32,6 +36,7 @@ import { ConfirmService } from '../../../core/services/confirm.service';
     ActionsContainerComponent,
     AeroButtonComponent,
     AeroBadgeComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-page-layout
@@ -150,12 +155,11 @@ import { ConfirmService } from '../../../core/services/confirm.service';
                   />
                 </div>
                 <div class="form-group">
-                  <label class="form-label">Fecha Próxima Inspección</label>
-                  <input
-                    type="date"
+                  <aero-date-picker
+                    [mode]="'single'"
                     formControlName="fecha_proxima_inspeccion"
-                    class="form-control"
-                  />
+                    label="Fecha Próxima Inspección"
+                  ></aero-date-picker>
                 </div>
                 <div class="form-group full-width">
                   <label class="form-label">Descripción</label>

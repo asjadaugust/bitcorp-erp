@@ -14,12 +14,12 @@ export interface FilterConfig {
 }
 
 import { DropdownComponent } from '../dropdown/dropdown.component';
-import { AeroButtonComponent } from '../../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-filter-bar',
   standalone: true,
-  imports: [CommonModule, FormsModule, DropdownComponent],
+  imports: [CommonModule, FormsModule, DropdownComponent, AeroDatePickerComponent],
   template: `
     <div class="filter-bar">
       <div class="filter-main">
@@ -54,46 +54,47 @@ import { AeroButtonComponent } from '../../../core/design-system';
       <div class="advanced-filters" *ngIf="showAdvanced && hasAdvancedFilters()">
         <div class="filters-grid">
           <ng-container *ngFor="let filter of getAdvancedFilters()">
-            <div class="filter-group">
+            <!-- Dropdown -->
+            <div class="filter-group filter-type-select" *ngIf="filter.type === 'select'">
               <span class="label">{{ filter.label }}</span>
-
-              <!-- Dropdown -->
               <app-dropdown
-                *ngIf="filter.type === 'select'"
                 [options]="getDropdownOptions(filter)"
                 [(ngModel)]="filter.value"
                 (selectionChange)="onFilterChange()"
                 [placeholder]="'Seleccionar...'"
                 [searchable]="(filter.options && filter.options.length > 5) || false"
               ></app-dropdown>
+            </div>
 
-              <!-- Date -->
-              <input
-                *ngIf="filter.type === 'date'"
-                type="date"
+            <!-- Date -->
+            <div class="filter-group filter-type-date" *ngIf="filter.type === 'date'">
+              <span class="label">{{ filter.label }}</span>
+              <aero-date-picker
+                [mode]="'single'"
                 [(ngModel)]="filter.value"
-                (change)="onFilterChange()"
-                class="form-control"
-              />
+                (dateChange)="onFilterChange()"
+                [height]="'44'"
+              ></aero-date-picker>
+            </div>
 
-              <!-- Date Range -->
-              <div *ngIf="filter.type === 'dateRange'" class="date-range-inputs">
-                <input
-                  type="date"
-                  [(ngModel)]="filter.valueStart"
-                  (change)="onFilterChange()"
-                  class="form-control date-input"
-                  placeholder="Desde"
-                />
-                <span class="date-separator">-</span>
-                <input
-                  type="date"
-                  [(ngModel)]="filter.valueEnd"
-                  (change)="onFilterChange()"
-                  class="form-control date-input"
-                  placeholder="Hasta"
-                />
-              </div>
+            <!-- Date Range: two separate labeled fields -->
+            <div class="filter-group filter-type-date" *ngIf="filter.type === 'dateRange'">
+              <span class="label">{{ filter.label }} Desde</span>
+              <aero-date-picker
+                [mode]="'single'"
+                [(ngModel)]="filter.valueStart"
+                (dateChange)="onFilterChange()"
+                [height]="'44'"
+              ></aero-date-picker>
+            </div>
+            <div class="filter-group filter-type-date" *ngIf="filter.type === 'dateRange'">
+              <span class="label">{{ filter.label }} Hasta</span>
+              <aero-date-picker
+                [mode]="'single'"
+                [(ngModel)]="filter.valueEnd"
+                (dateChange)="onFilterChange()"
+                [height]="'44'"
+              ></aero-date-picker>
             </div>
           </ng-container>
         </div>
@@ -150,23 +151,10 @@ import { AeroButtonComponent } from '../../../core/design-system';
         background: white;
       }
 
-      .search-input:focus,
-      .form-control:focus {
+      .search-input:focus {
         outline: none;
         border-color: var(--primary-500);
         box-shadow: 0 0 0 3px rgba(0, 119, 205, 0.1);
-      }
-
-      .date-range-inputs {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        flex-wrap: wrap;
-      }
-
-      .date-input {
-        flex: 1;
-        min-width: 130px;
       }
 
       /* Premium Toggle Button */
@@ -221,6 +209,36 @@ import { AeroButtonComponent } from '../../../core/design-system';
         border-bottom-right-radius: var(--s-12);
       }
 
+      .filters-grid {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--s-16);
+        align-items: end;
+      }
+
+      .filter-group {
+        display: flex;
+        flex-direction: column;
+        gap: var(--s-4);
+        min-width: 160px;
+        flex: 1 1 200px;
+      }
+
+      .filter-type-select {
+        flex: 0 1 220px;
+        max-width: 260px;
+      }
+
+      .filter-type-date {
+        flex: 0 1 280px;
+      }
+
+      .label {
+        font-size: var(--type-bodySmall-size);
+        font-weight: 500;
+        color: var(--primary-900);
+      }
+
       .filter-actions {
         display: flex;
         justify-content: flex-end;
@@ -229,22 +247,7 @@ import { AeroButtonComponent } from '../../../core/design-system';
         border-top: 1px dashed var(--grey-200);
       }
 
-      .date-range-inputs {
-        display: flex;
-        align-items: center;
-        gap: var(--s-8);
-        height: 42px;
-      }
-
-      .date-input {
-        flex: 1;
-        min-width: 0;
-      }
-
-      .date-separator {
-        color: var(--grey-500);
-        font-weight: 500;
-      }
+      /* date-range-inputs no longer needed — dateRange renders as two separate filter-groups */
     `,
   ],
 })

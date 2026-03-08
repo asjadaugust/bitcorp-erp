@@ -6,6 +6,7 @@ import { PeriodoInoperatividadService } from '../../core/services/periodo-inoper
 import { FormContainerComponent } from '../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../shared/components/form-section/form-section.component';
 import { AlertComponent } from '../../shared/components/alert/alert.component';
+import { AeroDatePickerComponent } from '../../core/design-system';
 
 @Component({
   selector: 'app-periodo-inoperatividad-form',
@@ -17,6 +18,7 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
     FormContainerComponent,
     FormSectionComponent,
     AlertComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -66,16 +68,13 @@ import { AlertComponent } from '../../shared/components/alert/alert.component';
         <!-- Section 2: Detalle de Inoperatividad -->
         <app-form-section title="Detalle de Inoperatividad - Clausula 7.6" icon="fa-clock">
           <div class="form-group">
-            <label class="form-label required" for="fecha_inicio"
-              >Fecha de inicio de inoperatividad</label
-            >
-            <input
-              id="fecha_inicio"
-              type="date"
-              class="form-control"
+            <aero-date-picker
+              [mode]="'single'"
               [(ngModel)]="form.fecha_inicio"
               name="fecha_inicio"
-            />
+              label="Fecha de inicio de inoperatividad"
+              [required]="true"
+            ></aero-date-picker>
             @if (diasActuales > 0) {
               <span class="field-hint" [class.hint-danger]="diasActuales >= form.dias_plazo">
                 <i class="fa-solid fa-clock"></i>

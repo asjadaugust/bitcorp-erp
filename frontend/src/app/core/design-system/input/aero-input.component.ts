@@ -222,7 +222,7 @@ export type InputState = 'default' | 'error' | 'service';
       .aero-form-field__field {
         display: flex;
         align-items: center;
-        border: 1px solid var(--grey-700);
+        border: 1px solid var(--grey-300);
         border-radius: var(--radius-sm);
         background-color: var(--neutral-0);
         padding: 0;
@@ -366,7 +366,7 @@ export type InputState = 'default' | 'error' | 'service';
         border: none;
         color: var(--grey-600);
         cursor: pointer;
-        padding: 0;
+        padding: var(--s-12);
         font-size: 14px;
         flex-shrink: 0;
       }

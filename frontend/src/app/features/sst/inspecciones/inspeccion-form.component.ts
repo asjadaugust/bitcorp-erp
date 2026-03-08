@@ -11,6 +11,7 @@ import { ValidationErrorsComponent } from '../../../shared/components/validation
 import { AlertComponent } from '../../../shared/components/alert/alert.component';
 import { FormContainerComponent } from '../../../shared/components/form-container/form-container.component';
 import { FormSectionComponent } from '../../../shared/components/form-section/form-section.component';
+import { AeroDatePickerComponent } from '../../../core/design-system';
 
 @Component({
   selector: 'app-inspeccion-form',
@@ -22,6 +23,7 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
     AlertComponent,
     FormContainerComponent,
     FormSectionComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-form-container
@@ -54,8 +56,11 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
       <form [formGroup]="form" class="form-grid">
         <app-form-section title="Datos del Hallazgo" icon="fa-exclamation-triangle">
           <div class="form-group">
-            <label class="form-label">Fecha Hallazgo</label>
-            <input type="date" formControlName="fecha_hallazgo" class="form-control" />
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_hallazgo"
+              label="Fecha Hallazgo"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">
@@ -140,8 +145,11 @@ import { FormSectionComponent } from '../../../shared/components/form-section/fo
           </div>
 
           <div class="form-group">
-            <label class="form-label">Fecha Subsanación</label>
-            <input type="date" formControlName="fecha_subsanacion" class="form-control" />
+            <aero-date-picker
+              [mode]="'single'"
+              formControlName="fecha_subsanacion"
+              label="Fecha Subsanación"
+            ></aero-date-picker>
           </div>
 
           <div class="form-group">

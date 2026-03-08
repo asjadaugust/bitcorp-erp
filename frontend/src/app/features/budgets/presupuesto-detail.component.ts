@@ -8,7 +8,7 @@ import {
   TabItem,
 } from '../../shared/components/page-layout/page-layout.component';
 import { PageCardComponent } from '../../shared/components/page-card/page-card.component';
-import { AeroButtonComponent } from '../../core/design-system';
+import { AeroButtonComponent, AeroDatePickerComponent } from '../../core/design-system';
 import { AeroBadgeComponent } from '../../core/design-system/badge/aero-badge.component';
 import {
   AeroDropdownComponent,
@@ -47,6 +47,7 @@ interface FaseGroup {
     AeroButtonComponent,
     AeroBadgeComponent,
     AeroDropdownComponent,
+    AeroDatePickerComponent,
   ],
   template: `
     <app-page-layout
@@ -112,13 +113,13 @@ interface FaseGroup {
                 />
               </div>
               <div class="form-group">
-                <label class="form-label">Fecha *</label>
-                <input
+                <aero-date-picker
                   data-testid="presupuesto-form-fecha"
-                  type="date"
-                  class="form-control"
+                  [mode]="'single'"
                   [(ngModel)]="createData.fecha"
-                />
+                  label="Fecha"
+                  [required]="true"
+                ></aero-date-picker>
               </div>
             </div>
             <div class="form-group" style="margin-top:var(--s-8)">

@@ -41,7 +41,9 @@ export type {
   DatePickerMode,
   DatePickerHeight,
   DatePickerState,
+  DateValueFormat,
   DateRange,
+  DateRangeString,
 } from './date-picker/aero-date-picker.component';
 
 export { AeroDayOfWeekComponent } from './day-of-week/aero-day-of-week.component';
