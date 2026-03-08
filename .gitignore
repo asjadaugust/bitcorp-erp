@@ -93,6 +93,9 @@ logs.txt
 # Keep custom skills committed:
 # !.opencode/skill/bitcorp-prd-analyzer/
 
+# Release state (runtime artifact)
+.claude/release-state.json
+
 # dora code context index
 .dora/
 
